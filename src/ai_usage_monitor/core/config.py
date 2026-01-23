@@ -13,6 +13,11 @@ Loads configuration from ~/.ai-usage-monitor.toml with the following structure:
     api_key = "sk_..."
     auto_upload = true
 
+    [telemetry]
+    enabled = false
+    token = "your_logfire_token"
+    sample_rate = 1.0
+
     [tools.claude-code]
     enabled = true
     data_path = "~/.claude/projects"
@@ -65,6 +70,19 @@ class CloudConfig:
 
 
 @dataclass
+class TelemetryConfig:
+    """Telemetry configuration for Logfire integration.
+
+    Telemetry is opt-in and disabled by default for privacy.
+    Requires logfire package: pip install ai-usage-monitor[logfire]
+    """
+
+    enabled: bool = False
+    token: Optional[str] = None
+    sample_rate: float = 1.0
+
+
+@dataclass
 class GeneralConfig:
     """General application configuration."""
 
@@ -83,6 +101,7 @@ class AppConfig:
 
     general: GeneralConfig = field(default_factory=GeneralConfig)
     cloud: CloudConfig = field(default_factory=CloudConfig)
+    telemetry: TelemetryConfig = field(default_factory=TelemetryConfig)
     tools: Dict[str, ToolConfig] = field(default_factory=dict)
     config_path: Optional[Path] = None
 
@@ -151,6 +170,15 @@ def _parse_config(data: Dict[str, Any], config_path: Path) -> AppConfig:
             url=cloud_data.get("url"),
             api_key=cloud_data.get("api_key"),
             auto_upload=cloud_data.get("auto_upload", False),
+        )
+
+    # Parse [telemetry] section
+    if "telemetry" in data:
+        telemetry_data = data["telemetry"]
+        config.telemetry = TelemetryConfig(
+            enabled=telemetry_data.get("enabled", False),
+            token=telemetry_data.get("token"),
+            sample_rate=telemetry_data.get("sample_rate", 1.0),
         )
 
     # Parse [tools.*] sections

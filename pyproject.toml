@@ -86,6 +86,9 @@ cloud = [
   "asyncpg>=0.29.0",
   "aecs4u-auth>=0.1.0",
 ]
+logfire = [
+  "logfire>=0.40.0"
+]
 
 
 [project.urls]
