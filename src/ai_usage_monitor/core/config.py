@@ -30,6 +30,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from ai_usage_monitor.utils.paths import get_config_file
+
 if sys.version_info >= (3, 11):
     import tomllib
 else:
@@ -40,7 +42,7 @@ else:
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_CONFIG_PATH = Path.home() / ".ai-usage-monitor.toml"
+DEFAULT_CONFIG_PATH = get_config_file()
 
 
 @dataclass

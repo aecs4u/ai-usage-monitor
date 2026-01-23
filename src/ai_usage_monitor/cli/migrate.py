@@ -123,12 +123,67 @@ def _log_migration_plan() -> None:
             logger.info("  - %s", item.name)
 
 
+def migrate_claude_config() -> bool:
+    """Migrate configuration from ~/.claude/config to ~/.ai-usage-monitor.
+
+    This handles the old directory structure where notifications.json
+    was stored in ~/.claude/config instead of ~/.ai-usage-monitor.
+
+    Returns:
+        True if migration was successful or not needed.
+    """
+    old_claude_config = Path.home() / ".claude" / "config"
+
+    if not old_claude_config.exists():
+        logger.debug("No old ~/.claude/config directory found")
+        return True
+
+    try:
+        # Ensure new config directory exists
+        NEW_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+
+        migrated_count = 0
+
+        # Migrate notifications.json
+        old_notifications = old_claude_config / "notifications.json"
+        if old_notifications.exists():
+            new_notifications = NEW_CONFIG_DIR / "notifications.json"
+            if not new_notifications.exists():
+                shutil.copy2(old_notifications, new_notifications)
+                logger.info("Migrated notifications.json from ~/.claude/config")
+                migrated_count += 1
+
+        # Migrate last_used.json if present (though this is less common)
+        old_last_used = old_claude_config / "last_used.json"
+        if old_last_used.exists():
+            new_last_used = NEW_CONFIG_DIR / "last_used.json"
+            if not new_last_used.exists():
+                shutil.copy2(old_last_used, new_last_used)
+                logger.info("Migrated last_used.json from ~/.claude/config")
+                migrated_count += 1
+
+        if migrated_count > 0:
+            logger.info("Migrated %d file(s) from ~/.claude/config", migrated_count)
+
+        return True
+
+    except Exception as e:
+        logger.warning("Failed to migrate from ~/.claude/config: %s", e)
+        return False
+
+
 def auto_migrate_if_needed() -> None:
     """Automatically migrate if old config exists and new doesn't.
 
     This is called during application startup to seamlessly
     migrate users from claude-monitor to ai-usage-monitor.
+
+    Also migrates from ~/.claude/config if present.
     """
+    # First migrate from ~/.claude/config (oldest)
+    migrate_claude_config()
+
+    # Then migrate from ~/.claude-monitor (if needed)
     if check_migration_needed():
         logger.info("Detected old configuration, migrating...")
         migrate_config()

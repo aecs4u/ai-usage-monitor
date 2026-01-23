@@ -178,6 +178,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         setup_environment()
         ensure_directories()
 
+        # Migrate old configuration if needed
+        from ai_usage_monitor.cli.migrate import auto_migrate_if_needed
+
+        auto_migrate_if_needed()
+
         if settings.log_file:
             setup_logging(settings.log_level, settings.log_file, disable_console=True)
         else:

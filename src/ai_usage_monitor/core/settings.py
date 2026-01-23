@@ -26,7 +26,9 @@ class LastUsedParams:
 
     def __init__(self, config_dir: Optional[Path] = None) -> None:
         """Initialize with config directory."""
-        self.config_dir = config_dir or Path.home() / ".ai-usage-monitor"
+        from ai_usage_monitor.utils.paths import get_config_dir
+
+        self.config_dir = config_dir or get_config_dir()
         self.params_file = self.config_dir / "last_used.json"
 
     def save(self, settings: "Settings") -> None:

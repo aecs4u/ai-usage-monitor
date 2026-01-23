@@ -107,14 +107,17 @@ uv tool install .
 ## Quick Start
 
 ```bash
-# Real-time monitoring (default)
+# Monthly usage report (default - great for quick check)
 ai-usage-monitor
+
+# Monthly report with subscription savings (Max5 plan)
+ai-usage-monitor --plan max5
+
+# Real-time monitoring
+ai-usage-monitor --view realtime
 
 # Daily usage report
 ai-usage-monitor --view daily
-
-# Monthly report with subscription savings (Max5 plan)
-ai-usage-monitor --view monthly --plan max5
 
 # Monitor specific tool
 ai-usage-monitor --tool codex-cli
@@ -140,7 +143,7 @@ The tool can be invoked using any of these commands:
 |--------|------|---------|-------------|
 | `--tool` | string | auto | Tool to monitor: `auto`, `all`, `claude-code`, `codex-cli`, `gemini-cli`, `cline`, `roo-code`, `kilo-code`, `github-copilot`, `opencode`, `pi-agent` |
 | `--plan` | string | custom | Plan type: `pro`, `max5`, `max20`, `custom` |
-| `--view` | string | realtime | View mode: `realtime`, `daily`, `monthly` |
+| `--view` | string | monthly | View mode: `realtime`, `daily`, `monthly` |
 | `--from-date` | string | None | Start date filter (YYYY-MM-DD) |
 | `--to-date` | string | None | End date filter (YYYY-MM-DD) |
 | `--timezone` | string | auto | Timezone (auto-detected) |
@@ -152,7 +155,10 @@ The tool can be invoked using any of these commands:
 
 ### View Modes
 
-#### Real-time View (Default)
+#### Monthly View (Default)
+Summary report with monthly aggregated usage data and subscription savings analysis. Great for quick checks of your overall usage.
+
+#### Real-time View
 Live monitoring with progress bars, current session data, and burn rate analysis.
 
 ```bash
