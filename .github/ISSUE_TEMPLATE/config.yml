@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/aecs4u/ai-usage-monitor#readme
+    about: Start with the README and usage examples.
+  - name: Troubleshooting Guide
+    url: https://github.com/aecs4u/ai-usage-monitor/blob/main/TROUBLESHOOTING.md
+    about: Common fixes and diagnostic tips.
+  - name: Questions and Ideas
+    url: https://github.com/aecs4u/ai-usage-monitor/discussions
+    about: Ask questions or propose ideas in Discussions.
