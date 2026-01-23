@@ -216,23 +216,30 @@ def _run_monitoring(args: argparse.Namespace) -> None:
             _run_multi_tool_table_view(args, view_mode, console)
             return
 
-        # Discover data paths using adapter system
-        data_paths: List[Path] = discover_data_paths_for_tool(active_tool)
-        if not data_paths:
-            adapter = AdapterRegistry.get_adapter(active_tool)
-            tool_display = adapter.metadata.display_name if adapter else active_tool
-            print_themed(f"No {tool_display} data directory found", style="error")
+        # Check for multi-tool mode in realtime view (not supported)
+        if active_tool == "all" and view_mode == "realtime":
+            print_themed(
+                "Multi-tool mode (--tool all) is not supported in realtime view.\n"
+                "Use --view daily or --view monthly for multi-tool reports.",
+                style="error"
+            )
             return
 
-        data_path: Path = data_paths[0]
-        logger.info(f"Using data path for {active_tool}: {data_path}")
+        # Get adapter for single tool
+        adapter = AdapterRegistry.get_adapter(active_tool)
+        if not adapter or not adapter.is_available():
+            tool_display = adapter.metadata.display_name if adapter else active_tool
+            print_themed(f"No data available for {tool_display}", style="error")
+            return
+
+        logger.info(f"Using adapter for {active_tool}: {adapter.metadata.display_name}")
 
         # Handle different view modes
         if view_mode in ["daily", "monthly"]:
-            _run_table_view(args, data_path, view_mode, console)
+            _run_table_view(args, adapter, view_mode, console)
             return
 
-        token_limit: int = _get_initial_token_limit(args, str(data_path))
+        token_limit: int = _get_initial_token_limit(args, adapter)
 
         display_controller = DisplayController()
         display_controller.live_manager._console = console
@@ -265,7 +272,8 @@ def _run_monitoring(args: argparse.Namespace) -> None:
                 update_interval=(
                     args.refresh_rate if hasattr(args, "refresh_rate") else 10
                 ),
-                data_path=str(data_path),
+                data_path=None,  # Not needed with adapter
+                adapter=adapter,  # Use adapter instead of data_path
             )
             orchestrator.set_args(args)
 
@@ -359,9 +367,17 @@ def _run_monitoring(args: argparse.Namespace) -> None:
 
 
 def _get_initial_token_limit(
-    args: argparse.Namespace, data_path: Union[str, Path]
+    args: argparse.Namespace, adapter
 ) -> int:
-    """Get initial token limit for the plan."""
+    """Get initial token limit for the plan using adapter.
+
+    Args:
+        args: Command line arguments
+        adapter: ToolAdapter instance for loading data
+
+    Returns:
+        Token limit for the plan
+    """
     logger = logging.getLogger(__name__)
     plan: str = getattr(args, "plan", PlanType.PRO.value)
 
@@ -380,12 +396,12 @@ def _get_initial_token_limit(
         print_themed("Analyzing usage data to determine cost limits...", style="info")
 
         try:
-            # Use quick start mode for faster initial load
+            # Use adapter to analyze usage data
             usage_data: Optional[Dict[str, Any]] = analyze_usage(
                 hours_back=96 * 2,
                 quick_start=False,
                 use_cache=False,
-                data_path=str(data_path),
+                adapter=adapter,  # Use adapter instead of data_path
             )
 
             if usage_data and "blocks" in usage_data:
@@ -553,9 +569,16 @@ def _run_multi_tool_table_view(
 
 
 def _run_table_view(
-    args: argparse.Namespace, data_path: Path, view_mode: str, console: Console
+    args: argparse.Namespace, adapter, view_mode: str, console: Console
 ) -> None:
-    """Run table view mode (daily/monthly)."""
+    """Run table view mode (daily/monthly) using adapter.
+
+    Args:
+        args: Command line arguments
+        adapter: ToolAdapter instance for loading data
+        view_mode: View mode ('daily' or 'monthly')
+        console: Rich console instance
+    """
     logger = logging.getLogger(__name__)
 
     try:
@@ -569,25 +592,35 @@ def _run_table_view(
             to_date = datetime.strptime(args.to_date, "%Y-%m-%d")
             to_date = to_date.replace(hour=23, minute=59, second=59, tzinfo=timezone.utc)
 
-        # Create aggregator with appropriate mode
+        # Load entries via adapter
+        logger.info(f"Loading {view_mode} usage data via adapter...")
+        entries, _ = adapter.load_usage_entries()
+
+        if not entries:
+            print_themed(f"No usage data found for {view_mode} view", style="warning")
+            return
+
+        # Create aggregator with entries
         aggregator = UsageAggregator(
-            data_path=str(data_path),
+            data_path="",  # Not used when entries provided
             aggregation_mode=view_mode,
             timezone=args.timezone,
             from_date=from_date,
             to_date=to_date,
         )
 
-        # Create table controller
-        controller = TableViewsController(console=console)
-
-        # Get aggregated data
-        logger.info(f"Loading {view_mode} usage data...")
-        aggregated_data = aggregator.aggregate()
+        # Aggregate the loaded entries
+        if view_mode == "daily":
+            aggregated_data = aggregator.aggregate_daily(entries, from_date, to_date)
+        else:
+            aggregated_data = aggregator.aggregate_monthly(entries, from_date, to_date)
 
         if not aggregated_data:
             print_themed(f"No usage data found for {view_mode} view", style="warning")
             return
+
+        # Create table controller
+        controller = TableViewsController(console=console)
 
         # Display the table
         controller.display_aggregated_view(
@@ -595,7 +628,7 @@ def _run_table_view(
             view_mode=view_mode,
             timezone=args.timezone,
             plan=args.plan,
-            token_limit=_get_initial_token_limit(args, data_path),
+            token_limit=_get_initial_token_limit(args, adapter),
         )
 
     except Exception as e:

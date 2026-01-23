@@ -2,10 +2,13 @@
 
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from ai_usage_monitor.data.analysis import analyze_usage
 from ai_usage_monitor.error_handling import report_error
+
+if TYPE_CHECKING:
+    from ai_usage_monitor.adapters.base import ToolAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -18,13 +21,15 @@ class DataManager:
         cache_ttl: int = 30,
         hours_back: int = 192,
         data_path: Optional[str] = None,
+        adapter: Optional["ToolAdapter"] = None,
     ) -> None:
         """Initialize data manager with cache and fetch settings.
 
         Args:
             cache_ttl: Cache time-to-live in seconds
             hours_back: Hours of historical data to fetch
-            data_path: Path to data directory
+            data_path: Path to data directory (legacy, use adapter instead)
+            adapter: Optional ToolAdapter instance for loading data (recommended)
         """
         self.cache_ttl: int = cache_ttl
         self._cache: Optional[Dict[str, Any]] = None
@@ -32,6 +37,7 @@ class DataManager:
 
         self.hours_back: int = hours_back
         self.data_path: Optional[str] = data_path
+        self.adapter: Optional["ToolAdapter"] = adapter
         self._last_error: Optional[str] = None
         self._last_successful_fetch: Optional[float] = None
 
@@ -60,6 +66,7 @@ class DataManager:
                     quick_start=False,
                     use_cache=False,
                     data_path=self.data_path,
+                    adapter=self.adapter,  # Pass adapter if available
                 )
 
                 if data is not None:

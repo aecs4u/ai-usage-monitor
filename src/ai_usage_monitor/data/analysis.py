@@ -5,12 +5,15 @@ Contains the main analyze_usage function and related analysis components.
 
 import logging
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from ai_usage_monitor.core.calculations import BurnRateCalculator
 from ai_usage_monitor.core.models import CostMode, SessionBlock, UsageEntry
 from ai_usage_monitor.data.analyzer import SessionAnalyzer
 from ai_usage_monitor.data.reader import load_usage_entries
+
+if TYPE_CHECKING:
+    from ai_usage_monitor.adapters.base import ToolAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +23,7 @@ def analyze_usage(
     use_cache: bool = True,
     quick_start: bool = False,
     data_path: Optional[str] = None,
+    adapter: Optional["ToolAdapter"] = None,
 ) -> Dict[str, Any]:
     """
     Main entry point to generate response_final.json.
@@ -34,14 +38,15 @@ def analyze_usage(
         hours_back: Only analyze data from last N hours (None = all data)
         use_cache: Use cached data when available
         quick_start: Use minimal data for quick startup (last 24h only)
-        data_path: Optional path to Claude data directory
+        data_path: Optional path to Claude data directory (legacy, use adapter instead)
+        adapter: Optional ToolAdapter instance for loading data (recommended)
 
     Returns:
         Dictionary with analyzed blocks
     """
     logger.info(
         f"analyze_usage called with hours_back={hours_back}, use_cache={use_cache}, "
-        f"quick_start={quick_start}, data_path={data_path}"
+        f"quick_start={quick_start}, data_path={data_path}, adapter={'provided' if adapter else 'None'}"
     )
 
     if quick_start and hours_back is None:
@@ -51,12 +56,24 @@ def analyze_usage(
         logger.info(f"Quick start mode: loading last {hours_back} hours")
 
     start_time = datetime.now()
-    entries, raw_entries = load_usage_entries(
-        data_path=data_path,
-        hours_back=hours_back,
-        mode=CostMode.AUTO,
-        include_raw=True,
-    )
+
+    # Use adapter if provided (new path), otherwise fallback to legacy reader
+    if adapter:
+        logger.debug(f"Loading entries via adapter: {adapter.metadata.name}")
+        entries, raw_entries = adapter.load_usage_entries(
+            hours_back=hours_back,
+            include_raw=True,
+        )
+    else:
+        # Fallback to legacy reader for backward compatibility
+        logger.debug("Loading entries via legacy reader (consider using adapter)")
+        entries, raw_entries = load_usage_entries(
+            data_path=data_path,
+            hours_back=hours_back,
+            mode=CostMode.AUTO,
+            include_raw=True,
+        )
+
     load_time = (datetime.now() - start_time).total_seconds()
     logger.info(f"Data loaded in {load_time:.3f}s")
 

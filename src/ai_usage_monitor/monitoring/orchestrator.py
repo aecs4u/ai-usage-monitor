@@ -3,12 +3,15 @@
 import logging
 import threading
 import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional
 
 from ai_usage_monitor.core.plans import DEFAULT_TOKEN_LIMIT, get_token_limit
 from ai_usage_monitor.error_handling import report_error
 from ai_usage_monitor.monitoring.data_manager import DataManager
 from ai_usage_monitor.monitoring.session_monitor import SessionMonitor
+
+if TYPE_CHECKING:
+    from ai_usage_monitor.adapters.base import ToolAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -17,17 +20,23 @@ class MonitoringOrchestrator:
     """Orchestrates monitoring components following SRP."""
 
     def __init__(
-        self, update_interval: int = 10, data_path: Optional[str] = None
+        self,
+        update_interval: int = 10,
+        data_path: Optional[str] = None,
+        adapter: Optional["ToolAdapter"] = None,
     ) -> None:
         """Initialize orchestrator with components.
 
         Args:
             update_interval: Seconds between updates
-            data_path: Optional path to Claude data directory
+            data_path: Optional path to Claude data directory (legacy, use adapter instead)
+            adapter: Optional ToolAdapter instance for loading data (recommended)
         """
         self.update_interval: int = update_interval
 
-        self.data_manager: DataManager = DataManager(cache_ttl=5, data_path=data_path)
+        self.data_manager: DataManager = DataManager(
+            cache_ttl=5, data_path=data_path, adapter=adapter
+        )
         self.session_monitor: SessionMonitor = SessionMonitor()
 
         self._monitoring: bool = False

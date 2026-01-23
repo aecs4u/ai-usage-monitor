@@ -290,18 +290,27 @@ class UsageAggregator:
             "entries_count": total_stats.count,
         }
 
-    def aggregate(self) -> List[Dict[str, Any]]:
+    def aggregate(
+        self, entries: Optional[List[UsageEntry]] = None
+    ) -> List[Dict[str, Any]]:
         """Main aggregation method that reads data and returns aggregated results.
+
+        Args:
+            entries: Optional pre-loaded usage entries. If None, will load from data_path.
 
         Returns:
             List of aggregated data based on aggregation_mode
         """
-        from ai_usage_monitor.data.reader import load_usage_entries
-
         logger.info(f"Starting aggregation in {self.aggregation_mode} mode")
 
-        # Load usage entries
-        entries, _ = load_usage_entries(data_path=self.data_path)
+        # Load usage entries if not provided (backward compatibility)
+        if entries is None:
+            from ai_usage_monitor.data.reader import load_usage_entries
+
+            logger.debug("Loading entries via reader (legacy path)")
+            entries, _ = load_usage_entries(data_path=self.data_path)
+        else:
+            logger.debug(f"Using provided entries: {len(entries)} entries")
 
         if not entries:
             logger.warning("No usage entries found")
