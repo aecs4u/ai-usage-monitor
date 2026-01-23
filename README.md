@@ -1,18 +1,33 @@
 # AI Usage Monitor
 
+**Track your AI coding assistant usage across Claude Code, Cline, Codex CLI, and more—with realtime monitoring, cost analytics, and beautiful terminal dashboards.**
+
 [![PyPI Version](https://img.shields.io/pypi/v/ai-usage-monitor.svg)](https://pypi.org/project/ai-usage-monitor/)
+[![Downloads](https://static.pepy.tech/badge/ai-usage-monitor/month)](https://pepy.tech/project/ai-usage-monitor)
 [![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
-
-A beautiful real-time terminal monitoring tool for AI coding assistant token usage. Supports **multiple AI tools** including Claude Code, Codex CLI, Gemini CLI, Cline, GitHub Copilot, and more. Features advanced analytics, subscription savings calculations, and MCP server integration.
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 ![AI Usage Monitor Screenshot](https://raw.githubusercontent.com/aecs4u/ai-usage-monitor/main/doc/scnew.png)
+
+## Why This Exists
+
+AI coding assistants are incredibly powerful, but costs can add up quickly. This tool gives you **complete visibility** into your usage patterns across **9 different AI tools**, helping you:
+
+- 💰 **Optimize spending** - See exactly where your tokens go
+- 📊 **Track trends** - Month-over-month comparisons and projections
+- 🎯 **Stay within limits** - Real-time monitoring with P90 limit detection
+- 🔒 **Keep data local** - Everything runs offline, no data leaves your machine
+- 🎨 **Beautiful dashboards** - Rich terminal UI with progress bars and tables
+
+**Works with:** Claude Code, Cline, Codex CLI, Gemini CLI, Roo Code, Kilo Code, GitHub Copilot, OpenCode, Pi Agent
 
 ---
 
 ## Table of Contents
 
+- [Why This Exists](#why-this-exists)
 - [Key Features](#key-features)
 - [Supported AI Tools](#supported-ai-tools)
 - [Installation](#installation)
@@ -26,7 +41,9 @@ A beautiful real-time terminal monitoring tool for AI coding assistant token usa
 - [Subscription Plans & Savings](#subscription-plans--savings)
 - [Development](#development)
 - [Troubleshooting](#troubleshooting)
+- [Community](#community)
 - [License](#license)
+- [Contributing](#contributing)
 
 ---
 
@@ -390,6 +407,19 @@ If upgrading from the old `claude-monitor` package:
 
 ---
 
+## Community
+
+We'd love to hear from you! Here's how to get involved:
+
+- 💬 **[Discussions](https://github.com/aecs4u/ai-usage-monitor/discussions)** - Ask questions, share usage tips, request features
+- 🐛 **[Issues](https://github.com/aecs4u/ai-usage-monitor/issues)** - Report bugs, track feature requests
+- 🌟 **[Good First Issues](https://github.com/aecs4u/ai-usage-monitor/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)** - Start contributing to the project
+- 📖 **[Contributing Guide](CONTRIBUTING.md)** - Learn how to help improve the project
+
+**Star this repo** ⭐ if you find it useful! It helps others discover the project.
+
+---
+
 ## License
 
 [MIT License](LICENSE) - feel free to use and modify as needed.
@@ -399,6 +429,8 @@ If upgrading from the old `claude-monitor` package:
 ## Contributing
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+**Looking to contribute?** Check out issues labeled [`good first issue`](https://github.com/aecs4u/ai-usage-monitor/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) or [`help wanted`](https://github.com/aecs4u/ai-usage-monitor/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22).
 
 ---
 
