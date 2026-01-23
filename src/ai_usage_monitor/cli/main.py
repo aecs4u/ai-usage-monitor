@@ -547,17 +547,6 @@ def _run_multi_tool_table_view(
             token_limit=_get_initial_token_limit(args, default_data_path) if default_data_path else 19000,
         )
 
-        # Wait for user to press Ctrl+C
-        print_themed("\nPress Ctrl+C to exit", style="info")
-        try:
-            try:
-                signal.pause()
-            except AttributeError:
-                while True:
-                    time.sleep(1)
-        except KeyboardInterrupt:
-            print_themed("\nExiting...", style="info")
-
     except Exception as e:
         logger.error(f"Error in multi-tool table view: {e}", exc_info=True)
         print_themed(f"Error displaying {view_mode} view: {e}", style="error")
@@ -608,19 +597,6 @@ def _run_table_view(
             plan=args.plan,
             token_limit=_get_initial_token_limit(args, data_path),
         )
-
-        # Wait for user to press Ctrl+C
-        print_themed("\nPress Ctrl+C to exit", style="info")
-        try:
-            # Use signal.pause() for more efficient waiting
-            try:
-                signal.pause()
-            except AttributeError:
-                # Fallback for Windows which doesn't support signal.pause()
-                while True:
-                    time.sleep(1)
-        except KeyboardInterrupt:
-            print_themed("\nExiting...", style="info")
 
     except Exception as e:
         logger.error(f"Error in table view: {e}", exc_info=True)

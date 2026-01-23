@@ -124,7 +124,7 @@ class Settings(BaseSettings):
     )
 
     view: Literal["realtime", "daily", "monthly", "session"] = Field(
-        default="realtime",
+        default="monthly",
         description="View mode (realtime, daily, monthly, session)",
     )
 
