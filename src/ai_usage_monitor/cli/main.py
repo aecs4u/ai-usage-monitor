@@ -70,6 +70,43 @@ def discover_data_paths_for_tool(
     return []
 
 
+def load_entries_from_all_tools():
+    """Load usage entries from all available tools.
+
+    Returns:
+        Combined list of UsageEntry objects from all available tools.
+    """
+    from ai_usage_monitor.core.models import UsageEntry
+
+    logger = logging.getLogger(__name__)
+    all_entries: List[UsageEntry] = []
+    available_tools = AdapterRegistry.get_available_tools()
+
+    if not available_tools:
+        logger.warning("No tools with data available")
+        return all_entries
+
+    for tool_meta in available_tools:
+        adapter = AdapterRegistry.get_adapter(tool_meta.name)
+        if adapter:
+            try:
+                entries, _ = adapter.load_usage_entries()
+                if entries:
+                    # Calculate cost for each entry if not already set
+                    for entry in entries:
+                        if entry.cost_usd == 0.0:
+                            entry.cost_usd = adapter.calculate_cost(entry)
+                    logger.info(f"Loaded {len(entries)} entries from {tool_meta.display_name}")
+                    all_entries.extend(entries)
+            except Exception as e:
+                logger.warning(f"Failed to load entries from {tool_meta.name}: {e}")
+
+    # Sort all entries by timestamp
+    all_entries.sort(key=lambda e: e.timestamp)
+    logger.info(f"Total entries loaded from all tools: {len(all_entries)}")
+    return all_entries
+
+
 def discover_claude_data_paths(custom_paths: Optional[List[str]] = None) -> List[Path]:
     """Discover all available Claude data directories (legacy compatibility).
 
@@ -166,6 +203,18 @@ def _run_monitoring(args: argparse.Namespace) -> None:
     try:
         # Get active tool from args
         active_tool: str = getattr(args, "active_tool", "claude-code")
+        logger = logging.getLogger(__name__)
+
+        # Handle "all" mode for daily/monthly views
+        if active_tool == "all" and view_mode in ["daily", "monthly"]:
+            available_tools = AdapterRegistry.get_available_tools()
+            if not available_tools:
+                print_themed("No tools with data available", style="error")
+                return
+            tool_names = [t.display_name for t in available_tools]
+            print_themed(f"Loading data from: {', '.join(tool_names)}", style="info")
+            _run_multi_tool_table_view(args, view_mode, console)
+            return
 
         # Discover data paths using adapter system
         data_paths: List[Path] = discover_data_paths_for_tool(active_tool)
@@ -176,7 +225,6 @@ def _run_monitoring(args: argparse.Namespace) -> None:
             return
 
         data_path: Path = data_paths[0]
-        logger = logging.getLogger(__name__)
         logger.info(f"Using data path for {active_tool}: {data_path}")
 
         # Handle different view modes
@@ -426,6 +474,93 @@ def validate_cli_environment() -> Optional[str]:
 
     except Exception as e:
         return f"Environment validation failed: {e}"
+
+
+def _run_multi_tool_table_view(
+    args: argparse.Namespace, view_mode: str, console: Console
+) -> None:
+    """Run table view mode for all available tools (daily/monthly)."""
+    logger = logging.getLogger(__name__)
+
+    try:
+        # Parse date range if provided
+        from_date = None
+        to_date = None
+        if hasattr(args, "from_date") and args.from_date:
+            from_date = datetime.strptime(args.from_date, "%Y-%m-%d")
+            from_date = from_date.replace(tzinfo=timezone.utc)
+        if hasattr(args, "to_date") and args.to_date:
+            to_date = datetime.strptime(args.to_date, "%Y-%m-%d")
+            to_date = to_date.replace(hour=23, minute=59, second=59, tzinfo=timezone.utc)
+
+        # Load entries from all tools
+        all_entries = load_entries_from_all_tools()
+        if not all_entries:
+            print_themed(f"No usage data found for {view_mode} view", style="warning")
+            return
+
+        # Create aggregator for processing (use a dummy path since we have entries)
+        from ai_usage_monitor.data.aggregator import UsageAggregator
+        from ai_usage_monitor.utils.time_utils import TimezoneHandler
+
+        timezone_handler = TimezoneHandler()
+
+        # Apply timezone to entries
+        for entry in all_entries:
+            if entry.timestamp.tzinfo is None:
+                entry.timestamp = timezone_handler.ensure_timezone(entry.timestamp)
+
+        # Create a temporary aggregator just for aggregation functions
+        aggregator = UsageAggregator(
+            data_path="",  # Not used since we have entries
+            aggregation_mode=view_mode,
+            timezone=args.timezone,
+            from_date=from_date,
+            to_date=to_date,
+        )
+
+        # Aggregate the entries
+        if view_mode == "daily":
+            aggregated_data = aggregator.aggregate_daily(all_entries, from_date, to_date)
+        else:
+            aggregated_data = aggregator.aggregate_monthly(all_entries, from_date, to_date)
+
+        if not aggregated_data:
+            print_themed(f"No usage data found for {view_mode} view", style="warning")
+            return
+
+        # Create table controller
+        controller = TableViewsController(console=console)
+
+        # Get a default data path for token limit calculation (use claude-code if available)
+        default_data_path = None
+        claude_paths = discover_data_paths_for_tool("claude-code")
+        if claude_paths:
+            default_data_path = claude_paths[0]
+
+        # Display the table
+        controller.display_aggregated_view(
+            data=aggregated_data,
+            view_mode=view_mode,
+            timezone=args.timezone,
+            plan=args.plan,
+            token_limit=_get_initial_token_limit(args, default_data_path) if default_data_path else 19000,
+        )
+
+        # Wait for user to press Ctrl+C
+        print_themed("\nPress Ctrl+C to exit", style="info")
+        try:
+            try:
+                signal.pause()
+            except AttributeError:
+                while True:
+                    time.sleep(1)
+        except KeyboardInterrupt:
+            print_themed("\nExiting...", style="info")
+
+    except Exception as e:
+        logger.error(f"Error in multi-tool table view: {e}", exc_info=True)
+        print_themed(f"Error displaying {view_mode} view: {e}", style="error")
 
 
 def _run_table_view(
