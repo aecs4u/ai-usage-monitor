@@ -120,16 +120,47 @@ class UsageAggregator:
         Args:
             data_path: Path to the data directory
             aggregation_mode: Mode of aggregation ('daily' or 'monthly')
-            timezone: Timezone string for date formatting
+            timezone: Timezone string for date formatting (use 'auto' for system timezone)
             from_date: Optional start date filter
             to_date: Optional end date filter
         """
         self.data_path = data_path
         self.aggregation_mode = aggregation_mode
-        self.timezone = timezone
+
+        # Validate and normalize timezone
+        self.timezone = self._validate_timezone(timezone)
+
         self.from_date = from_date
         self.to_date = to_date
-        self.timezone_handler = TimezoneHandler()
+
+        # Initialize timezone handler with validated timezone
+        self.timezone_handler = TimezoneHandler(default_tz=self.timezone)
+
+    def _validate_timezone(self, tz_str: str) -> str:
+        """Validate timezone string and provide sensible defaults.
+
+        Args:
+            tz_str: Timezone string to validate
+
+        Returns:
+            Validated timezone string
+        """
+        import pytz
+
+        # Handle auto/system timezone
+        if tz_str in ["auto", "local"]:
+            from ai_usage_monitor.utils.time_utils import get_system_timezone
+
+            tz_str = get_system_timezone()
+            logger.info(f"Using system timezone: {tz_str}")
+
+        # Validate timezone exists
+        try:
+            pytz.timezone(tz_str)
+            return tz_str
+        except pytz.exceptions.UnknownTimeZoneError:
+            logger.warning(f"Invalid timezone '{tz_str}', defaulting to UTC")
+            return "UTC"  # Safe default, NOT Warsaw
 
     def _aggregate_by_period(
         self,

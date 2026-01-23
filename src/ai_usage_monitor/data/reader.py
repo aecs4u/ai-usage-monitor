@@ -34,20 +34,35 @@ def load_usage_entries(
     hours_back: Optional[int] = None,
     mode: CostMode = CostMode.AUTO,
     include_raw: bool = False,
+    timezone: Optional[str] = None,
 ) -> Tuple[List[UsageEntry], Optional[List[Dict[str, Any]]]]:
     """Load and convert JSONL files to UsageEntry objects.
+
+    .. deprecated:: 4.1.0
+        Use ToolAdapter.load_usage_entries() instead.
+        This function will be removed in v5.0.0.
 
     Args:
         data_path: Path to Claude data directory (defaults to ~/.claude/projects)
         hours_back: Only include entries from last N hours
         mode: Cost calculation mode
         include_raw: Whether to return raw JSON data alongside entries
+        timezone: Optional timezone for timestamp normalization (defaults to UTC)
 
     Returns:
         Tuple of (usage_entries, raw_data) where raw_data is None unless include_raw=True
     """
+    import warnings
+
+    warnings.warn(
+        "load_usage_entries() is deprecated and will be removed in v5.0.0. "
+        "Use ToolAdapter.load_usage_entries() instead for multi-tool support.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
     data_path = Path(data_path if data_path else "~/.claude/projects").expanduser()
-    timezone_handler = TimezoneHandler()
+    timezone_handler = TimezoneHandler(default_tz=timezone or "UTC")
     pricing_calculator = PricingCalculator()
 
     cutoff_time = None
@@ -87,12 +102,25 @@ def load_usage_entries(
 def load_all_raw_entries(data_path: Optional[str] = None) -> List[Dict[str, Any]]:
     """Load all raw JSONL entries without processing.
 
+    .. deprecated:: 4.1.0
+        Use ToolAdapter.load_usage_entries(include_raw=True) instead.
+        This function will be removed in v5.0.0.
+
     Args:
         data_path: Path to Claude data directory
 
     Returns:
         List of raw JSON dictionaries
     """
+    import warnings
+
+    warnings.warn(
+        "load_all_raw_entries() is deprecated and will be removed in v5.0.0. "
+        "Use ToolAdapter.load_usage_entries(include_raw=True) instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
     data_path = Path(data_path if data_path else "~/.claude/projects").expanduser()
     jsonl_files = _find_jsonl_files(data_path)
 

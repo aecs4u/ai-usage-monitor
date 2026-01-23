@@ -45,8 +45,11 @@ class DisplayController:
         self.advanced_custom_display = None
         self.buffer_manager = ScreenBufferManager()
         self.session_calculator = SessionCalculator()
-        config_dir = Path.home() / ".claude" / "config"
-        config_dir.mkdir(parents=True, exist_ok=True)
+
+        # Use app-specific config directory
+        from ai_usage_monitor.utils.paths import get_config_dir
+
+        config_dir = get_config_dir()
         self.notification_manager = NotificationManager(config_dir)
 
     def _extract_session_data(self, active_block: Dict[str, Any]) -> Dict[str, Any]:
