@@ -614,7 +614,10 @@ def _run_multi_tool_table_view(
             view_mode=view_mode,
             timezone=args.timezone,
             plan=args.plan,
-            token_limit=_get_initial_token_limit(args, default_data_path) if default_data_path else 19000,
+            token_limit=_get_initial_token_limit(args, default_data_path)
+            if default_data_path
+            else 19000,
+            tool_name="all",  # Multi-tool view
         )
 
     except Exception as e:
@@ -683,6 +686,7 @@ def _run_table_view(
             timezone=args.timezone,
             plan=args.plan,
             token_limit=_get_initial_token_limit(args, adapter),
+            tool_name=adapter.metadata.name,  # Single-tool view
         )
 
     except Exception as e:

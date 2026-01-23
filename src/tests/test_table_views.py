@@ -164,7 +164,9 @@ class TestTableViewsController:
         sample_totals: Dict[str, Any],
     ) -> None:
         """Test creation of daily table structure."""
-        table = controller.create_daily_table(sample_daily_data, sample_totals, "UTC")
+        table = controller.create_daily_table(
+            sample_daily_data, sample_totals, "UTC", tool_name="claude-code"
+        )
 
         assert isinstance(table, Table)
         assert table.title == "Claude Code Token Usage Report - Daily (UTC)"
@@ -176,15 +178,16 @@ class TestTableViewsController:
         assert table.show_lines is True
 
         # Check columns
-        assert len(table.columns) == 8
+        assert len(table.columns) == 9
         assert table.columns[0].header == "Date"
-        assert table.columns[1].header == "Models"
-        assert table.columns[2].header == "Input"
-        assert table.columns[3].header == "Output"
-        assert table.columns[4].header == "Cache Create"
-        assert table.columns[5].header == "Cache Read"
-        assert table.columns[6].header == "Total Tokens"
-        assert table.columns[7].header == "Cost*"
+        assert table.columns[1].header == "Tools"
+        assert table.columns[2].header == "Models"
+        assert table.columns[3].header == "Input"
+        assert table.columns[4].header == "Output"
+        assert table.columns[5].header == "Cache Create"
+        assert table.columns[6].header == "Cache Read"
+        assert table.columns[7].header == "Total Tokens"
+        assert table.columns[8].header == "Cost*"
 
     def test_create_daily_table_data(
         self,
@@ -210,7 +213,7 @@ class TestTableViewsController:
     ) -> None:
         """Test creation of monthly table structure."""
         table = controller.create_monthly_table(
-            sample_monthly_data, sample_totals, "UTC"
+            sample_monthly_data, sample_totals, "UTC", tool_name="claude-code"
         )
 
         assert isinstance(table, Table)
@@ -223,15 +226,16 @@ class TestTableViewsController:
         assert table.show_lines is True
 
         # Check columns
-        assert len(table.columns) == 8
+        assert len(table.columns) == 9
         assert table.columns[0].header == "Month"
-        assert table.columns[1].header == "Models"
-        assert table.columns[2].header == "Input"
-        assert table.columns[3].header == "Output"
-        assert table.columns[4].header == "Cache Create"
-        assert table.columns[5].header == "Cache Read"
-        assert table.columns[6].header == "Total Tokens"
-        assert table.columns[7].header == "Cost*"
+        assert table.columns[1].header == "Tools"
+        assert table.columns[2].header == "Models"
+        assert table.columns[3].header == "Input"
+        assert table.columns[4].header == "Output"
+        assert table.columns[5].header == "Cache Create"
+        assert table.columns[6].header == "Cache Read"
+        assert table.columns[7].header == "Total Tokens"
+        assert table.columns[8].header == "Cost*"
 
     def test_create_monthly_table_data(
         self,
@@ -301,7 +305,7 @@ class TestTableViewsController:
     ) -> None:
         """Test create_aggregate_table for daily view."""
         table = controller.create_aggregate_table(
-            sample_daily_data, sample_totals, "daily", "UTC"
+            sample_daily_data, sample_totals, "daily", "UTC", tool_name="claude-code"
         )
 
         assert isinstance(table, Table)
@@ -315,7 +319,7 @@ class TestTableViewsController:
     ) -> None:
         """Test create_aggregate_table for monthly view."""
         table = controller.create_aggregate_table(
-            sample_monthly_data, sample_totals, "monthly", "UTC"
+            sample_monthly_data, sample_totals, "monthly", "UTC", tool_name="claude-code"
         )
 
         assert isinstance(table, Table)
@@ -341,7 +345,7 @@ class TestTableViewsController:
     ) -> None:
         """Test daily table displays correct timezone."""
         table = controller.create_daily_table(
-            sample_daily_data, sample_totals, "America/New_York"
+            sample_daily_data, sample_totals, "America/New_York", tool_name="claude-code"
         )
         assert (
             table.title == "Claude Code Token Usage Report - Daily (America/New_York)"
@@ -355,7 +359,7 @@ class TestTableViewsController:
     ) -> None:
         """Test monthly table displays correct timezone."""
         table = controller.create_monthly_table(
-            sample_monthly_data, sample_totals, "Europe/London"
+            sample_monthly_data, sample_totals, "Europe/London", tool_name="claude-code"
         )
         assert table.title == "Claude Code Token Usage Report - Monthly (Europe/London)"
 
@@ -454,10 +458,11 @@ class TestTableViewsController:
         sample_totals: Dict[str, Any],
     ) -> None:
         """Test that numeric columns are right-aligned."""
-        table = controller.create_daily_table(sample_daily_data, sample_totals, "UTC")
+        table = controller.create_daily_table(sample_daily_data, sample_totals, "UTC", tool_name="claude-code")
 
         # Check that numeric columns are right-aligned
-        for i in range(2, 8):  # Columns 2-7 are numeric
+        # Columns: Date(0), Tools(1), Models(2), Input(3), Output(4), Cache Create(5), Cache Read(6), Total(7), Cost(8)
+        for i in range(3, 9):  # Columns 3-8 are numeric
             assert table.columns[i].justify == "right"
 
     def test_empty_data_lists(self, controller: TableViewsController) -> None:

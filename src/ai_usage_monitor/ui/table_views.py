@@ -39,6 +39,33 @@ class TableViewsController:
         self.table_header_style = "bold"
         self.border_style = "bright_blue"
 
+    def _get_tool_display_name(self, tool_name: Optional[str] = None) -> str:
+        """Get display name for a tool.
+
+        Args:
+            tool_name: Tool identifier (e.g., 'claude-code', 'all', None)
+
+        Returns:
+            Display name for the tool
+        """
+        if tool_name == "all":
+            return "AI Usage"
+        elif tool_name:
+            # Try to get display name from adapter metadata
+            try:
+                from ai_usage_monitor.adapters.registry import AdapterRegistry
+
+                adapter = AdapterRegistry.get_adapter(tool_name)
+                if adapter:
+                    return adapter.metadata.display_name
+            except Exception:
+                pass
+            # Fallback: capitalize tool name
+            return tool_name.replace("-", " ").replace("_", " ").title()
+        else:
+            # Default: Generic name
+            return "AI Usage"
+
     def _create_base_table(
         self, title: str, period_column_name: str, period_column_width: int
     ) -> Table:
@@ -147,6 +174,7 @@ class TableViewsController:
         daily_data: List[Dict[str, Any]],
         totals: Dict[str, Any],
         timezone: str = "UTC",
+        tool_name: Optional[str] = None,
     ) -> Table:
         """Create a daily statistics table.
 
@@ -154,13 +182,17 @@ class TableViewsController:
             daily_data: List of daily aggregated data
             totals: Total statistics
             timezone: Timezone for display
+            tool_name: Optional tool name for display (e.g., 'claude-code', 'all')
 
         Returns:
             Rich Table object
         """
+        # Determine title based on tool name
+        title_tool = self._get_tool_display_name(tool_name)
+
         # Create base table
         table = self._create_base_table(
-            title=f"Claude Code Token Usage Report - Daily ({timezone})",
+            title=f"{title_tool} Token Usage Report - Daily ({timezone})",
             period_column_name="Date",
             period_column_width=12,
         )
@@ -178,6 +210,7 @@ class TableViewsController:
         monthly_data: List[Dict[str, Any]],
         totals: Dict[str, Any],
         timezone: str = "UTC",
+        tool_name: Optional[str] = None,
     ) -> Table:
         """Create a monthly statistics table.
 
@@ -185,13 +218,17 @@ class TableViewsController:
             monthly_data: List of monthly aggregated data
             totals: Total statistics
             timezone: Timezone for display
+            tool_name: Optional tool name for display (e.g., 'claude-code', 'all')
 
         Returns:
             Rich Table object
         """
+        # Determine title based on tool name
+        title_tool = self._get_tool_display_name(tool_name)
+
         # Create base table
         table = self._create_base_table(
-            title=f"Claude Code Token Usage Report - Monthly ({timezone})",
+            title=f"{title_tool} Token Usage Report - Monthly ({timezone})",
             period_column_name="Month",
             period_column_width=10,
         )
@@ -491,6 +528,7 @@ class TableViewsController:
         totals: Dict[str, Any],
         view_type: str,
         timezone: str = "UTC",
+        tool_name: Optional[str] = None,
     ) -> Table:
         """Create a table for either daily or monthly aggregated data.
 
@@ -499,6 +537,7 @@ class TableViewsController:
             totals: Total statistics
             view_type: Type of view ('daily' or 'monthly')
             timezone: Timezone for display
+            tool_name: Optional tool name for display (e.g., 'claude-code', 'all')
 
         Returns:
             Rich Table object
@@ -507,9 +546,13 @@ class TableViewsController:
             ValueError: If view_type is not 'daily' or 'monthly'
         """
         if view_type == "daily":
-            return self.create_daily_table(aggregate_data, totals, timezone)
+            return self.create_daily_table(
+                aggregate_data, totals, timezone, tool_name=tool_name
+            )
         elif view_type == "monthly":
-            return self.create_monthly_table(aggregate_data, totals, timezone)
+            return self.create_monthly_table(
+                aggregate_data, totals, timezone, tool_name=tool_name
+            )
         else:
             raise ValueError(f"Invalid view type: {view_type}")
 
@@ -521,6 +564,7 @@ class TableViewsController:
         plan: str,
         token_limit: int,
         console: Optional[Console] = None,
+        tool_name: Optional[str] = None,
     ) -> None:
         """Display aggregated view with table and summary.
 
@@ -531,6 +575,7 @@ class TableViewsController:
             plan: Plan type
             token_limit: Token limit for the plan
             console: Optional Console instance
+            tool_name: Optional tool name for display (e.g., 'claude-code', 'all')
         """
         if not data:
             no_data_display = self.create_no_data_display(view_mode)
@@ -573,7 +618,9 @@ class TableViewsController:
         summary_panel = self.create_summary_panel(view_mode, totals, period, plan, num_months, data_range)
 
         # Create and display table
-        table = self.create_aggregate_table(data, totals, view_mode, timezone)
+        table = self.create_aggregate_table(
+            data, totals, view_mode, timezone, tool_name=tool_name
+        )
 
         # Display using console if provided
         if console:
