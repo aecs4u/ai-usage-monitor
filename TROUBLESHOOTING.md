@@ -528,7 +528,7 @@ Output from: claude-monitor --debug | head -20
 ### Where to Get Help
 
 1. **GitHub Issues**: [Create new issue](https://github.com/Maciek-roboblog/Claude-Code-Usage-Monitor/issues/new)
-2. **Email**: [maciek@roboblog.eu](mailto:maciek@roboblog.eu)
+2. **Email**: [emanuele@aecs4u.com](mailto:emanuele@aecs4u.com)
 3. **Documentation**: [README.md](README.md)
 
 ## 🔄 Complete Reset

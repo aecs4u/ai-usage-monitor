@@ -11,8 +11,8 @@ description = "A fast, cross-platform, real-time token usage tracker and cost mo
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.9"
-authors = [{ name = "Maciek", email = "maciek@roboblog.eu" }]
-maintainers = [{ name = "Maciek", email = "maciek@roboblog.eu" }]
+authors = [{ name = "Maciek", email = "emanuele@aecs4u.com" }]
+maintainers = [{ name = "Maciek", email = "emanuele@aecs4u.com" }]
 keywords = [
   "ai", "analytics", "claude", "codex", "copilot", "cline", "dashboard",
   "developer-tools", "gemini", "monitoring", "rich",

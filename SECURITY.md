@@ -8,7 +8,7 @@ current releases before reporting issues.
 ## Reporting a Vulnerability
 
 If you believe you have found a security vulnerability, please report it
-privately by emailing maciek@roboblog.eu.
+privately by emailing emanuele@aecs4u.com.
 
 Please include:
 - A clear description of the issue

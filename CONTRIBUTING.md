@@ -413,7 +413,7 @@ Outstanding contributors will be featured:
 
 1. **GitHub Issues**: For bug reports and feature requests
 2. **GitHub Discussions**: For general questions and ideas
-3. **Email**: [maciek@roboblog.eu](mailto:maciek@roboblog.eu) for direct contact
+3. **Email**: [emanuele@aecs4u.com](mailto:emanuele@aecs4u.com) for direct contact
 4. **Code Review**: Ask questions in PR comments
 
 ### 📚 Resources
@@ -443,7 +443,7 @@ Outstanding contributors will be featured:
 
 ### 📞 Reporting Issues
 
-If you experience unacceptable behavior, contact: [maciek@roboblog.eu](mailto:maciek@roboblog.eu)
+If you experience unacceptable behavior, contact: [emanuele@aecs4u.com](mailto:emanuele@aecs4u.com)
 
 ---
 

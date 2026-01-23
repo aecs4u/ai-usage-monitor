@@ -322,7 +322,7 @@ uv run ruff format .
 ### 📧 **Contact & Support**
 - **Technical Questions**: Open GitHub issues with detailed context
 - **Feature Requests**: Use GitHub discussions for community input
-- **Security Issues**: Email [maciek@roboblog.eu](mailto:maciek@roboblog.eu) directly
+- **Security Issues**: Email [emanuele@aecs4u.com](mailto:emanuele@aecs4u.com) directly
 - **General Inquiries**: GitHub discussions or repository issues
 
 ### 📚 **Documentation**

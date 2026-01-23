@@ -76,7 +76,7 @@
          run: |
            VERSION="${{ needs.check-version.outputs.version }}"
            git config user.name "maciekdymarczyk"
-           git config user.email "maciek@roboblog.eu"
+           git config user.email "emanuele@aecs4u.com"
            git tag -a "v$VERSION" -m "Release v$VERSION"
            git push origin "v$VERSION"
 
