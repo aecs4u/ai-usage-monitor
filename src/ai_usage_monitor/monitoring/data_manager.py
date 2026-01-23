@@ -22,6 +22,7 @@ class DataManager:
         hours_back: int = 192,
         data_path: Optional[str] = None,
         adapter: Optional["ToolAdapter"] = None,
+        use_incremental: bool = True,
     ) -> None:
         """Initialize data manager with cache and fetch settings.
 
@@ -30,6 +31,7 @@ class DataManager:
             hours_back: Hours of historical data to fetch
             data_path: Path to data directory (legacy, use adapter instead)
             adapter: Optional ToolAdapter instance for loading data (recommended)
+            use_incremental: Enable incremental loading for performance (legacy reader only)
         """
         self.cache_ttl: int = cache_ttl
         self._cache: Optional[Dict[str, Any]] = None
@@ -38,8 +40,16 @@ class DataManager:
         self.hours_back: int = hours_back
         self.data_path: Optional[str] = data_path
         self.adapter: Optional["ToolAdapter"] = adapter
+        self.use_incremental: bool = use_incremental
+        self._file_tracker: Optional["FileStateTracker"] = None
         self._last_error: Optional[str] = None
         self._last_successful_fetch: Optional[float] = None
+
+        # Initialize file tracker if incremental mode enabled
+        if self.use_incremental and not self.adapter:
+            from ai_usage_monitor.monitoring.file_tracker import FileStateTracker
+
+            self._file_tracker = FileStateTracker()
 
     def get_data(self, force_refresh: bool = False) -> Optional[Dict[str, Any]]:
         """Get monitoring data with caching and error handling.
@@ -62,6 +72,15 @@ class DataManager:
 
         lf.log_metric("monitoring.cache_miss", 1, force_refresh=force_refresh)
 
+        # Check if we can use incremental loading (legacy reader only)
+        if self._should_use_incremental():
+            files_changed = self._check_files_changed()
+            if not files_changed:
+                logger.debug("No files changed, skipping data fetch (incremental)")
+                return self._cache
+
+            lf.log_metric("monitoring.incremental_refresh", 1, files_changed=True)
+
         max_retries: int = 3
         for attempt in range(max_retries):
             try:
@@ -80,6 +99,11 @@ class DataManager:
                     self._set_cache(data)
                     self._last_successful_fetch = time.time()
                     self._last_error = None
+
+                    # Update file tracker after successful fetch (for incremental mode)
+                    if self._should_use_incremental():
+                        self._update_file_tracker()
+
                     return data
 
                 logger.warning("No data returned from analyze_usage")
@@ -127,7 +151,105 @@ class DataManager:
         """Invalidate the cache."""
         self._cache = None
         self._cache_timestamp = None
+
+        # Also clear file tracker on cache invalidation
+        if self._file_tracker:
+            self._file_tracker.clear()
+
         logger.debug("Cache invalidated")
+
+    def _should_use_incremental(self) -> bool:
+        """Check if incremental loading should be used.
+
+        Returns:
+            True if incremental mode is enabled and available
+        """
+        # Only use incremental for legacy reader (not adapters)
+        return (
+            self.use_incremental
+            and self._file_tracker is not None
+            and self.data_path is not None
+            and self.adapter is None
+        )
+
+    def _check_files_changed(self) -> bool:
+        """Check if any files have changed since last read.
+
+        Returns:
+            True if files have changed, False otherwise
+        """
+        if not self._file_tracker or not self.data_path:
+            return True  # Default to changed if no tracker
+
+        try:
+            from pathlib import Path
+
+            from ai_usage_monitor.data.reader import _find_jsonl_files
+
+            data_path = Path(self.data_path).expanduser()
+            jsonl_files = _find_jsonl_files(data_path)
+
+            if not jsonl_files:
+                logger.debug("No JSONL files found, skipping incremental check")
+                return False
+
+            # Get files that need to be read
+            files_to_read = self._file_tracker.get_files_to_read(jsonl_files)
+
+            # If there are files to read, files have changed
+            files_changed = len(files_to_read) > 0
+
+            if files_changed:
+                logger.debug(
+                    f"{len(files_to_read)} files changed (incremental check)"
+                )
+            else:
+                logger.debug("No files changed (incremental check)")
+
+            return files_changed
+
+        except Exception as e:
+            logger.warning(f"Error checking file changes: {e}")
+            return True  # Default to changed on error
+
+    def _update_file_tracker(self) -> None:
+        """Update file tracker with current file states after successful read.
+
+        This ensures the tracker stays synchronized with the actual file system
+        state after a data fetch completes successfully.
+        """
+        if not self._file_tracker or not self.data_path:
+            return
+
+        try:
+            from pathlib import Path
+
+            from ai_usage_monitor.data.reader import _find_jsonl_files
+
+            data_path = Path(self.data_path).expanduser()
+            jsonl_files = _find_jsonl_files(data_path)
+
+            if not jsonl_files:
+                logger.debug("No JSONL files found, skipping file tracker update")
+                return
+
+            # Update tracker with current state of all files
+            for file_path in jsonl_files:
+                try:
+                    # Get file size to use as "final offset" (entire file read)
+                    file_size = file_path.stat().st_size
+                    self._file_tracker.update_file_state(file_path, file_size)
+                except (FileNotFoundError, PermissionError, OSError) as e:
+                    logger.debug(f"Skipping file tracker update for {file_path}: {e}")
+                    continue
+
+            logger.debug(
+                f"Updated file tracker for {len(jsonl_files)} files (incremental)"
+            )
+
+        except Exception as e:
+            logger.warning(f"Error updating file tracker: {e}")
+            # Non-critical error, don't fail the entire operation
 
     def _is_cache_valid(self) -> bool:
         """Check if cache is still valid."""
