@@ -119,6 +119,63 @@ class PricingCalculator:
             "cache_creation": 1.25,
             "cache_read": 0.10,
         },
+        # OpenAI models - January 2026 pricing
+        # Source: https://openai.com/api/pricing/
+        "gpt-4o": {
+            "input": 2.50,
+            "output": 10.0,
+            "cache_creation": 0.0,
+            "cache_read": 1.25,  # Cached input tokens
+        },
+        "gpt-4o-mini": {
+            "input": 0.15,
+            "output": 0.60,
+            "cache_creation": 0.0,
+            "cache_read": 0.075,  # Cached input tokens
+        },
+        "gpt-4-turbo": {
+            "input": 10.0,
+            "output": 30.0,
+            "cache_creation": 0.0,
+            "cache_read": 5.0,
+        },
+        "gpt-4": {
+            "input": 30.0,
+            "output": 60.0,
+            "cache_creation": 0.0,
+            "cache_read": 15.0,
+        },
+        "gpt-3.5-turbo": {
+            "input": 0.50,
+            "output": 1.50,
+            "cache_creation": 0.0,
+            "cache_read": 0.25,
+        },
+        "o1": {
+            "input": 15.0,
+            "output": 60.0,
+            "cache_creation": 0.0,
+            "cache_read": 7.5,
+        },
+        "o1-mini": {
+            "input": 3.0,
+            "output": 12.0,
+            "cache_creation": 0.0,
+            "cache_read": 1.5,
+        },
+        "o3-mini": {
+            "input": 1.10,
+            "output": 4.40,
+            "cache_creation": 0.0,
+            "cache_read": 0.55,
+        },
+        # Generic OpenAI fallback (uses GPT-4o pricing)
+        "openai": {
+            "input": 2.50,
+            "output": 10.0,
+            "cache_creation": 0.0,
+            "cache_read": 1.25,
+        },
     }
 
     def __init__(
@@ -148,6 +205,28 @@ class PricingCalculator:
             "claude-3-opus": self.FALLBACK_PRICING["opus-3"],
             "claude-3-sonnet": self.FALLBACK_PRICING["sonnet-3"],
             "claude-3-haiku": self.FALLBACK_PRICING["haiku-3"],
+            # OpenAI models
+            "gpt-4o": self.FALLBACK_PRICING["gpt-4o"],
+            "gpt-4o-2024-11-20": self.FALLBACK_PRICING["gpt-4o"],
+            "gpt-4o-2024-08-06": self.FALLBACK_PRICING["gpt-4o"],
+            "gpt-4o-2024-05-13": self.FALLBACK_PRICING["gpt-4o"],
+            "gpt-4o-mini": self.FALLBACK_PRICING["gpt-4o-mini"],
+            "gpt-4o-mini-2024-07-18": self.FALLBACK_PRICING["gpt-4o-mini"],
+            "gpt-4-turbo": self.FALLBACK_PRICING["gpt-4-turbo"],
+            "gpt-4-turbo-2024-04-09": self.FALLBACK_PRICING["gpt-4-turbo"],
+            "gpt-4": self.FALLBACK_PRICING["gpt-4"],
+            "gpt-4-0613": self.FALLBACK_PRICING["gpt-4"],
+            "gpt-3.5-turbo": self.FALLBACK_PRICING["gpt-3.5-turbo"],
+            "gpt-3.5-turbo-0125": self.FALLBACK_PRICING["gpt-3.5-turbo"],
+            "o1": self.FALLBACK_PRICING["o1"],
+            "o1-2024-12-17": self.FALLBACK_PRICING["o1"],
+            "o1-preview": self.FALLBACK_PRICING["o1"],
+            "o1-mini": self.FALLBACK_PRICING["o1-mini"],
+            "o1-mini-2024-09-12": self.FALLBACK_PRICING["o1-mini"],
+            "o3-mini": self.FALLBACK_PRICING["o3-mini"],
+            "o3-mini-2025-01-31": self.FALLBACK_PRICING["o3-mini"],
+            # Generic OpenAI fallback
+            "openai": self.FALLBACK_PRICING["openai"],
         }
         self._cost_cache: Dict[str, float] = {}
 

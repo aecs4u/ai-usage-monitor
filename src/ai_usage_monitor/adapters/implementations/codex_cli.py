@@ -35,7 +35,7 @@ class CodexCLIAdapter(ToolAdapter):
             data_format="jsonl",
             default_paths=["~/.codex/sessions", "~/.config/codex/sessions"],
             supported_features=["tokens", "sessions", "models", "cache"],
-            pricing_available=False,  # OpenAI pricing varies
+            pricing_available=True,  # OpenAI pricing now supported
             version="1.0.0",
             description="OpenAI Codex CLI usage tracking",
         )
@@ -139,7 +139,12 @@ class CodexCLIAdapter(ToolAdapter):
     def _parse_entry(
         self, data: Dict[str, Any], cutoff_time: Optional[datetime]
     ) -> Optional[UsageEntry]:
-        """Parse a single data entry into UsageEntry."""
+        """Parse a single data entry into UsageEntry.
+
+        Codex CLI uses event-based format with different event types:
+        - session_meta: Contains session ID, model provider info
+        - event_msg with payload.type=token_count: Contains token usage
+        """
         try:
             # Parse timestamp
             timestamp_str = data.get("timestamp") or data.get("created_at")
@@ -156,36 +161,73 @@ class CodexCLIAdapter(ToolAdapter):
             if cutoff_time and timestamp < cutoff_time:
                 return None
 
-            # Extract tokens
+            # Handle Codex CLI event-based format
+            event_type = data.get("type")
+            payload = data.get("payload", {})
+
+            # Look for token_count events
+            if event_type == "event_msg" and payload.get("type") == "token_count":
+                info = payload.get("info", {})
+                # Use last_token_usage for incremental tracking (not total)
+                usage = info.get("last_token_usage") or info.get("total_token_usage", {})
+
+                input_tokens = usage.get("input_tokens", 0)
+                output_tokens = usage.get("output_tokens", 0)
+                cached_tokens = usage.get("cached_input_tokens", 0)
+
+                if not (input_tokens or output_tokens):
+                    return None
+
+                return UsageEntry(
+                    timestamp=timestamp,
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                    cache_read_tokens=cached_tokens,
+                    model="openai",  # Codex CLI uses OpenAI models
+                    request_id=data.get("id", ""),
+                    tool_name="codex-cli",
+                    session_id="",
+                )
+
+            # Fallback: try legacy format with direct usage field
             usage = data.get("usage", {})
-            input_tokens = usage.get("input_tokens") or usage.get("prompt_tokens", 0)
-            output_tokens = (
-                usage.get("output_tokens") or usage.get("completion_tokens", 0)
-            )
-            cached_tokens = usage.get("cached_input_tokens", 0)
+            if usage:
+                input_tokens = usage.get("input_tokens") or usage.get("prompt_tokens", 0)
+                output_tokens = (
+                    usage.get("output_tokens") or usage.get("completion_tokens", 0)
+                )
+                cached_tokens = usage.get("cached_input_tokens", 0)
 
-            if not (input_tokens or output_tokens):
-                return None
+                if not (input_tokens or output_tokens):
+                    return None
 
-            return UsageEntry(
-                timestamp=timestamp,
-                input_tokens=input_tokens,
-                output_tokens=output_tokens,
-                cache_read_tokens=cached_tokens,
-                model=data.get("model", ""),
-                request_id=data.get("id") or data.get("request_id", ""),
-                tool_name="codex-cli",
-                session_id=data.get("session_id", ""),
-            )
+                return UsageEntry(
+                    timestamp=timestamp,
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                    cache_read_tokens=cached_tokens,
+                    model=data.get("model", ""),
+                    request_id=data.get("id") or data.get("request_id", ""),
+                    tool_name="codex-cli",
+                    session_id=data.get("session_id", ""),
+                )
+
+            return None
 
         except Exception as e:
             logger.debug(f"Failed to parse Codex entry: {e}")
             return None
 
     def calculate_cost(self, entry: UsageEntry) -> float:
-        """Calculate cost for a Codex entry.
+        """Calculate cost for a Codex entry using OpenAI pricing."""
+        from ai_usage_monitor.core.pricing import PricingCalculator
 
-        Note: OpenAI pricing varies by model. Returns 0 as we don't
-        have definitive pricing for Codex CLI.
-        """
-        return 0.0
+        calculator = PricingCalculator()
+        # Use the model from entry, or default to "openai" for generic pricing
+        model = entry.model if entry.model else "openai"
+        return calculator.calculate_cost(
+            model=model,
+            input_tokens=entry.input_tokens,
+            output_tokens=entry.output_tokens,
+            cache_read_tokens=entry.cache_read_tokens,
+        )
