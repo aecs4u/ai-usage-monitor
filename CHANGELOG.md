@@ -1,5 +1,61 @@
 # Changelog
 
+## [4.0.0] - 2026-01-23
+
+### Breaking Changes
+- **Project Rename**: Renamed from `claude-monitor` to `ai-usage-monitor`
+  - New package name: `ai-usage-monitor`
+  - New CLI commands: `ai-usage-monitor`, `usage-monitor`, `um`
+  - Old commands (`claude-monitor`, `cmonitor`, `ccmonitor`) are deprecated
+- **Module Rename**: `claude_monitor` -> `ai_usage_monitor`
+- **Config Directory**: `~/.claude-monitor/` -> `~/.ai-usage-monitor/`
+
+### New Features
+
+#### Multi-Tool Support
+- **9 AI Coding Tools**: Support for Claude Code, Codex CLI, Gemini CLI, Cline, Roo Code, Kilo Code, GitHub Copilot, OpenCode, Pi Agent
+- **Adapter Architecture**: Pluggable adapter system for easy addition of new tools
+- **Tool Selection**: `--tool` flag to select specific tool or `auto`/`all` modes
+- **Auto-Detection**: Automatically detects available tools and their data paths
+
+#### MCP Server
+- **Model Context Protocol**: Integration with AI assistants via MCP
+- **Available Tools**: `get_daily_stats`, `get_model_usage`, `get_cost_breakdown`, `compare_tools`, `list_available_tools`
+- **Entry Point**: `ai-usage-monitor-mcp` command
+
+#### Subscription Savings
+- **Savings Calculations**: Display how much you save with subscription plans vs API pricing
+- **Plan Pricing**: Pro ($20/mo), Max5 ($100/mo), Max20 ($200/mo)
+- **API Equivalent Cost**: "Cost*" column shows what you would pay with API pricing
+- **Subscription Note**: Info message for subscription users explaining costs are included in subscription
+
+#### Month-over-Month Comparison
+- **MoM Panel**: New panel in monthly view showing month-over-month changes
+- **Delta Calculations**: Token and cost deltas with color-coded indicators
+- **Per-Month Savings**: Savings calculations for each month
+- **Trend Analysis**: Overall trend from first to last month
+
+#### Date Range Filtering
+- **CLI Options**: `--from-date` and `--to-date` for filtering reports (YYYY-MM-DD format)
+- **Data Range Display**: Summary panel shows the actual data range
+- **Flexible Filtering**: Works with both daily and monthly views
+
+#### TOML Configuration
+- **Config File**: `~/.ai-usage-monitor.toml` for persistent settings
+- **Tool Configuration**: Enable/disable specific tools, set custom data paths
+- **Cloud Settings**: Prepare for future cloud sync functionality
+
+### Improvements
+- **Extended UsageEntry Model**: Added `tool_name`, `session_id`, `user_id`, `machine_id`, `organization_id` fields
+- **Updated Pricing**: Added support for latest models (claude-opus-4-5, etc.)
+- **Migration Utility**: Automatic migration from old config directory
+
+### Technical Changes
+- **Repository Rename**: `Claude-Code-Usage-Monitor` -> `ai-usage-monitor`
+- **New Entry Points**: `ai-usage-monitor`, `usage-monitor`, `um`, `ai-usage-monitor-mcp`
+- **Adapter Registry**: Centralized tool adapter management
+- **Settings Extension**: New fields for multi-tool and cloud sync support
+
 ## [3.1.0] - 2025-07-23
 
 ### 🆕 New Features

@@ -1,6 +1,6 @@
-# 🚧 Development Status & Roadmap
+# Development Status & Roadmap
 
-Current implementation status and planned features for Claude Code Usage Monitor v3.0.0+.
+Current implementation status and planned features for AI Usage Monitor v4.0.0+.
 
 ## 🎯 Current Implementation Status (v3.0.0)
 
@@ -41,10 +41,10 @@ Current implementation status and planned features for Claude Code Usage Monitor
 - **Cross-platform support** (Windows, macOS, Linux)
 - **Professional CI/CD** with automated testing and releases
 
-**📋 Command Aliases**:
-- `claude-monitor` - Main command (full name)
-- `cmonitor` - Short alias for convenience
-- `ccm` - Ultra-short alias for power users
+**Command Aliases**:
+- `ai-usage-monitor` - Main command (full name)
+- `usage-monitor` - Short alias for convenience
+- `um` - Ultra-short alias for power users
 
 #### 🛠️ **Development Infrastructure**
 - **100+ test cases** with comprehensive coverage (80% requirement)
@@ -183,8 +183,8 @@ Cross-platform monitoring with mobile apps and web interfaces for enterprise env
 #### **Quick Setup**
 ```bash
 # Clone the repository
-git clone https://github.com/Maciek-roboblog/Claude-Code-Usage-Monitor.git
-cd Claude-Code-Usage-Monitor
+git clone https://github.com/aecs4u/ai-usage-monitor.git
+cd ai-usage-monitor
 
 # Install development dependencies with UV
 uv sync --extra dev
@@ -314,10 +314,10 @@ uv run ruff format .
 ## 📞 **Developer Resources**
 
 ### 🔗 **Key Links**
-- **Repository**: [Claude-Code-Usage-Monitor](https://github.com/Maciek-roboblog/Claude-Code-Usage-Monitor)
-- **Issues**: [GitHub Issues](https://github.com/Maciek-roboblog/Claude-Code-Usage-Monitor/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/Maciek-roboblog/Claude-Code-Usage-Monitor/discussions)
-- **Releases**: [GitHub Releases](https://github.com/Maciek-roboblog/Claude-Code-Usage-Monitor/releases)
+- **Repository**: [Claude-Code-Usage-Monitor](https://github.com/aecs4u/ai-usage-monitor)
+- **Issues**: [GitHub Issues](https://github.com/aecs4u/ai-usage-monitor/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/aecs4u/ai-usage-monitor/discussions)
+- **Releases**: [GitHub Releases](https://github.com/aecs4u/ai-usage-monitor/releases)
 
 ### 📧 **Contact & Support**
 - **Technical Questions**: Open GitHub issues with detailed context

@@ -1,6 +1,6 @@
-# 🤝 Contributing Guide
+# Contributing Guide
 
-Welcome to the Claude Code Usage Monitor project! We're excited to have you contribute to making this tool better for everyone.
+Welcome to the AI Usage Monitor project! We're excited to have you contribute to making this tool better for everyone.
 
 ---
 
@@ -28,8 +28,8 @@ We welcome all kinds of contributions:
 ```bash
 # Fork the repository on GitHub
 # Then clone your fork
-git clone https://github.com/YOUR-USERNAME/Claude-Code-Usage-Monitor.git
-cd Claude-Code-Usage-Monitor
+git clone https://github.com/YOUR-USERNAME/ai-usage-monitor.git
+cd ai-usage-monitor
 ```
 
 ### 2. Set Up Development Environment
@@ -43,8 +43,8 @@ source venv/bin/activate  # Linux/Mac
 # Install project and development dependencies
 pip install -e .[dev]
 
-# Make script executable (Linux/Mac)
-chmod +x claude_monitor.py
+# Run the monitor
+ai-usage-monitor --help
 ```
 
 ### 3. Create a Feature Branch
@@ -120,7 +120,7 @@ def predict_token_depletion(current_usage, burn_rate):
 # tests/test_core.py
 
 import pytest
-from claude_monitor.core import TokenMonitor
+from ai_usage_monitor.core import TokenMonitor
 
 def test_token_calculation():
     """Test token usage calculation."""
@@ -318,7 +318,7 @@ pytest
 pytest tests/test_core.py
 
 # Run with coverage
-pytest --cov=claude_monitor
+pytest --cov=ai_usage_monitor
 
 # Run tests on multiple Python versions (if using tox)
 tox
@@ -370,7 +370,7 @@ Help us test on different platforms:
 
 We're collecting **anonymized data** about token limits to improve auto-detection:
 
-**What to share in [Issue #1](https://github.com/Maciek-roboblog/Claude-Code-Usage-Monitor/issues/1)**:
+**What to share in [Issue #1](https://github.com/aecs4u/ai-usage-monitor/issues/1)**:
 - Your subscription type (Pro, Teams, Enterprise)
 - Maximum tokens reached (custom_max value)
 - When the limit was exceeded
