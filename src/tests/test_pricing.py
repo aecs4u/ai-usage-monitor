@@ -4,8 +4,8 @@ from typing import Dict, List, Union
 
 import pytest
 
-from claude_monitor.core.models import CostMode, TokenCounts
-from claude_monitor.core.pricing import PricingCalculator
+from ai_usage_monitor.core.models import CostMode, TokenCounts
+from ai_usage_monitor.core.pricing import PricingCalculator
 
 
 class TestPricingCalculator:
@@ -60,6 +60,14 @@ class TestPricingCalculator:
     def test_init_default_pricing(self, calculator: PricingCalculator) -> None:
         """Test initialization with default pricing."""
         assert calculator.pricing is not None
+        # Claude 4.5 models
+        assert "claude-opus-4-5-20251101" in calculator.pricing
+        assert "claude-sonnet-4-5-20251101" in calculator.pricing
+        assert "claude-haiku-4-5-20251101" in calculator.pricing
+        # Claude 4 models
+        assert "claude-opus-4-20250514" in calculator.pricing
+        assert "claude-sonnet-4-20250514" in calculator.pricing
+        # Legacy models
         assert "claude-3-opus" in calculator.pricing
         assert "claude-3-sonnet" in calculator.pricing
         assert "claude-3-haiku" in calculator.pricing
@@ -79,8 +87,18 @@ class TestPricingCalculator:
         """Test that fallback pricing has correct structure."""
         fallback = PricingCalculator.FALLBACK_PRICING
 
-        for model_type in ["opus", "sonnet", "haiku"]:
-            assert model_type in fallback
+        # Check all model families exist
+        expected_families = [
+            "opus-4.5", "sonnet-4.5", "haiku-4.5",  # 4.5 family
+            "opus-4.1",  # 4.1 family
+            "opus-4", "sonnet-4",  # 4 family
+            "sonnet-3.5", "haiku-3.5",  # 3.5 family
+            "opus-3", "sonnet-3", "haiku-3",  # 3 family (legacy)
+            "opus", "sonnet", "haiku",  # Backward compatibility aliases
+        ]
+
+        for model_type in expected_families:
+            assert model_type in fallback, f"Missing {model_type} in fallback pricing"
             pricing = fallback[model_type]
             assert "input" in pricing
             assert "output" in pricing
@@ -328,13 +346,22 @@ class TestPricingCalculator:
     def test_all_supported_models(self, calculator: PricingCalculator) -> None:
         """Test that all supported models can calculate costs."""
         supported_models: List[str] = [
+            # Claude 4.5 models
+            "claude-opus-4-5-20251101",
+            "claude-sonnet-4-5-20251101",
+            "claude-haiku-4-5-20251101",
+            # Claude 4.1 models
+            "claude-opus-4-1-20250414",
+            # Claude 4 models
+            "claude-sonnet-4-20250514",
+            "claude-opus-4-20250514",
+            # Claude 3.5 models
+            "claude-3-5-sonnet",
+            "claude-3-5-haiku",
+            # Claude 3 models (legacy)
             "claude-3-opus",
             "claude-3-sonnet",
             "claude-3-haiku",
-            "claude-3-5-sonnet",
-            "claude-3-5-haiku",
-            "claude-sonnet-4-20250514",
-            "claude-opus-4-20250514",
         ]
 
         for model in supported_models:
@@ -379,6 +406,7 @@ class TestPricingCalculator:
             ("claude-3-haiku-20240307", "claude-3-haiku"),
             ("claude-3-opus-20240229", "claude-3-opus"),
             ("claude-3-5-sonnet-20241022", "claude-3-5-sonnet"),
+            ("claude-opus-4-5-20251101", "claude-opus-4-5-20251101"),
         ]
 
         for input_model, _expected_normalized in test_cases:
@@ -392,3 +420,87 @@ class TestPricingCalculator:
                 # Model name normalization might not handle all formats
                 # This is acceptable for now
                 pass
+
+    def test_calculate_cost_claude_opus_4_5(
+        self, calculator: PricingCalculator
+    ) -> None:
+        """Test cost calculation for Claude Opus 4.5 with new pricing."""
+        cost = calculator.calculate_cost(
+            model="claude-opus-4-5-20251101",
+            input_tokens=1000,
+            output_tokens=500,
+            cache_creation_tokens=100,
+            cache_read_tokens=50,
+        )
+
+        # Opus 4.5 pricing: $5 input, $25 output, $6.25 cache creation, $0.50 cache read
+        expected = (
+            1000 * 5.0  # input
+            + 500 * 25.0  # output
+            + 100 * 6.25  # cache creation
+            + 50 * 0.50  # cache read
+        ) / 1000000
+        assert abs(cost - expected) < 1e-6
+
+    def test_calculate_cost_claude_sonnet_4_5(
+        self, calculator: PricingCalculator
+    ) -> None:
+        """Test cost calculation for Claude Sonnet 4.5 with new pricing."""
+        cost = calculator.calculate_cost(
+            model="claude-sonnet-4-5-20251101",
+            input_tokens=2000,
+            output_tokens=1000,
+        )
+
+        # Sonnet 4.5 pricing: $3 input, $15 output (≤200K tokens)
+        expected = (2000 * 3.0 + 1000 * 15.0) / 1000000
+        assert abs(cost - expected) < 1e-6
+
+    def test_calculate_cost_claude_haiku_4_5(
+        self, calculator: PricingCalculator
+    ) -> None:
+        """Test cost calculation for Claude Haiku 4.5 with new pricing."""
+        cost = calculator.calculate_cost(
+            model="claude-haiku-4-5-20251101",
+            input_tokens=1000,
+            output_tokens=500,
+            cache_creation_tokens=100,
+            cache_read_tokens=50,
+        )
+
+        # Haiku 4.5 pricing: $1 input, $5 output, $1.25 cache creation, $0.10 cache read
+        expected = (
+            1000 * 1.0  # input
+            + 500 * 5.0  # output
+            + 100 * 1.25  # cache creation
+            + 50 * 0.10  # cache read
+        ) / 1000000
+        assert abs(cost - expected) < 1e-6
+
+    def test_fallback_pricing_version_detection(
+        self, calculator: PricingCalculator
+    ) -> None:
+        """Test that fallback pricing correctly detects model versions."""
+        # Test Opus 4.5 fallback
+        cost_opus_45 = calculator.calculate_cost(
+            model="some-opus-4.5-model", input_tokens=1000000, output_tokens=0
+        )
+        assert abs(cost_opus_45 - 5.0) < 1e-6  # $5 per MTok
+
+        # Test Opus 4.1 fallback
+        cost_opus_41 = calculator.calculate_cost(
+            model="some-opus-4.1-model", input_tokens=1000000, output_tokens=0
+        )
+        assert abs(cost_opus_41 - 15.0) < 1e-6  # $15 per MTok
+
+        # Test Haiku 4.5 fallback
+        cost_haiku_45 = calculator.calculate_cost(
+            model="some-haiku-4.5-model", input_tokens=1000000, output_tokens=0
+        )
+        assert abs(cost_haiku_45 - 1.0) < 1e-6  # $1 per MTok
+
+        # Test Haiku 3 fallback
+        cost_haiku_3 = calculator.calculate_cost(
+            model="some-haiku-3-model", input_tokens=1000000, output_tokens=0
+        )
+        assert abs(cost_haiku_3 - 0.25) < 1e-6  # $0.25 per MTok

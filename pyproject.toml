@@ -5,17 +5,17 @@ requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "claude-monitor"
-version = "3.1.0"
-description = "A real-time terminal monitoring tool for Claude Code token usage with advanced analytics and Rich UI"
+name = "ai-usage-monitor"
+version = "4.0.0"
+description = "A fast, cross-platform, real-time token usage tracker and cost monitor for AI coding tools (Claude, Codex, Gemini, Cline, Copilot, and more)"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.9"
 authors = [{ name = "Maciek", email = "maciek@roboblog.eu" }]
 maintainers = [{ name = "Maciek", email = "maciek@roboblog.eu" }]
 keywords = [
-  "ai", "analytics", "claude", "dashboard",
-  "developer-tools", "monitoring", "rich",
+  "ai", "analytics", "claude", "codex", "copilot", "cline", "dashboard",
+  "developer-tools", "gemini", "monitoring", "rich",
   "terminal", "token", "usage"
 ]
 classifiers = [
@@ -45,7 +45,8 @@ dependencies = [
   "pytz>=2023.3",
   "rich>=13.7.0",
   "tomli>=1.2.0; python_version < '3.11'",
-  "tzdata; sys_platform == 'win32'"
+  "tzdata; sys_platform == 'win32'",
+  "httpx>=0.25.0",
 ]
 
 [project.optional-dependencies]
@@ -71,6 +72,20 @@ test = [
   "pytest-asyncio>=0.24.0",
   "pytest-benchmark>=4.0.0"
 ]
+sqlite = [
+  "aiosqlite>=0.19.0"
+]
+mcp = [
+  "mcp>=0.1.0"
+]
+cloud = [
+  "fastapi>=0.109.0",
+  "uvicorn>=0.27.0",
+  "sqlmodel>=0.0.16",
+  "alembic>=1.13.0",
+  "asyncpg>=0.29.0",
+  "aecs4u-auth>=0.1.0",
+]
 
 
 [project.urls]
@@ -83,19 +98,26 @@ changelog = "https://github.com/Maciek-roboblog/Claude-Code-Usage-Monitor/blob/m
 "Discussions" = "https://github.com/Maciek-roboblog/Claude-Code-Usage-Monitor/discussions"
 
 [project.scripts]
-claude-monitor = "claude_monitor.__main__:main"
-claude-code-monitor = "claude_monitor.__main__:main"
-cmonitor = "claude_monitor.__main__:main"
-ccmonitor = "claude_monitor.__main__:main"
-ccm = "claude_monitor.__main__:main"
+# New entry points
+ai-usage-monitor = "ai_usage_monitor.__main__:main"
+usage-monitor = "ai_usage_monitor.__main__:main"
+um = "ai_usage_monitor.__main__:main"
+# MCP server entry point
+ai-usage-monitor-mcp = "ai_usage_monitor.mcp:main"
+# Legacy entry points (backward compatibility)
+claude-monitor = "ai_usage_monitor.__main__:main"
+claude-code-monitor = "ai_usage_monitor.__main__:main"
+cmonitor = "ai_usage_monitor.__main__:main"
+ccmonitor = "ai_usage_monitor.__main__:main"
+ccm = "ai_usage_monitor.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["claude_monitor*"]
+include = ["ai_usage_monitor*"]
 exclude = ["tests*", "src/tests*"]
 
 [tool.setuptools.package-data]
-claude_monitor = ["py.typed"]
+ai_usage_monitor = ["py.typed"]
 
 [tool.black]
 line-length = 88
@@ -117,7 +139,7 @@ extend-exclude = '''
 [tool.isort]
 profile = "black"
 line_length = 88
-known_first_party = ["claude_monitor"]
+known_first_party = ["ai_usage_monitor"]
 force_single_line = true
 atomic = true
 include_trailing_comma = true
@@ -160,7 +182,7 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = [
   "--strict-markers","--strict-config","--color=yes","--tb=short",
-  "--cov=claude_monitor","--cov-report=term-missing","--cov-report=html",
+  "--cov=ai_usage_monitor","--cov-report=term-missing","--cov-report=html",
   "--cov-report=xml","--cov-fail-under=70","--no-cov-on-fail","-ra","-q",
   "-m","not integration"
 ]
@@ -181,7 +203,7 @@ filterwarnings = [
 
 [tool.coverage.run]
 branch = true
-source = ["src/claude_monitor"]
+source = ["src/ai_usage_monitor"]
 omit = ["*/tests/*","*/test_*","*/__main__.py","*/conftest.py"]
 
 [tool.coverage.report]

@@ -6,7 +6,7 @@ import pytest
 from rich.panel import Panel
 from rich.table import Table
 
-from claude_monitor.ui.table_views import TableViewsController
+from ai_usage_monitor.ui.table_views import TableViewsController
 
 
 class TestTableViewsController:
@@ -184,7 +184,7 @@ class TestTableViewsController:
         assert table.columns[4].header == "Cache Create"
         assert table.columns[5].header == "Cache Read"
         assert table.columns[6].header == "Total Tokens"
-        assert table.columns[7].header == "Cost (USD)"
+        assert table.columns[7].header == "Cost*"
 
     def test_create_daily_table_data(
         self,
@@ -231,7 +231,7 @@ class TestTableViewsController:
         assert table.columns[4].header == "Cache Create"
         assert table.columns[5].header == "Cache Read"
         assert table.columns[6].header == "Total Tokens"
-        assert table.columns[7].header == "Cost (USD)"
+        assert table.columns[7].header == "Cost*"
 
     def test_create_monthly_table_data(
         self,

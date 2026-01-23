@@ -23,7 +23,7 @@ def run_tests() -> int:
         "-v",
         "--tb=short",
         "--color=yes",
-        f"--cov={src_dir / 'claude_monitor' / 'data'}",
+        f"--cov={src_dir / 'ai_usage_monitor' / 'data'}",
         "--cov-report=term-missing",
         "--cov-report=html:htmlcov",
     ]

@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from claude_monitor.core.models import CostMode, UsageEntry
+from ai_usage_monitor.core.models import CostMode, UsageEntry
 
 
 @pytest.fixture

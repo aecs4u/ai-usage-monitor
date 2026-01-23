@@ -1,0 +1,79 @@
+# AI Usage Monitor Configuration
+# Copy this file to ~/.ai-usage-monitor.toml to customize settings
+
+[general]
+# Default tool to monitor (auto, all, or specific tool name)
+# Options: auto, all, claude-code, codex-cli, gemini-cli, cline,
+#          roo-code, kilo-code, github-copilot, opencode, pi-agent
+default_tool = "auto"
+
+# Display theme (light, dark, classic, auto)
+theme = "auto"
+
+# Timezone for display (auto-detected from system)
+# Examples: UTC, America/New_York, Europe/London, Asia/Tokyo
+timezone = "auto"
+
+# Time format (12h, 24h, auto)
+time_format = "auto"
+
+# Data refresh rate in seconds
+refresh_rate = 10
+
+# Plan type (pro, max5, max20, custom)
+plan = "custom"
+
+# Default view mode (realtime, daily, monthly, session)
+view = "realtime"
+
+
+[cloud]
+# Cloud server URL for syncing usage data (optional)
+# url = "https://api.ai-usage-monitor.dev"
+
+# API key for cloud authentication (optional)
+# api_key = "your-api-key-here"
+
+# Automatically upload usage data to cloud
+auto_upload = false
+
+
+# Tool-specific configuration
+# Enable/disable individual tools and customize their settings
+
+[tools.claude-code]
+enabled = true
+# Custom data path (optional, uses default if not specified)
+# data_path = "~/.claude/projects"
+
+[tools.codex-cli]
+enabled = true
+# data_path = "~/.codex/sessions"
+
+[tools.gemini-cli]
+enabled = true
+# data_path = "~/.gemini"
+
+[tools.cline]
+enabled = true
+# Uses VS Code globalStorage by default
+
+[tools.roo-code]
+enabled = false
+# Uses VS Code globalStorage by default
+
+[tools.kilo-code]
+enabled = false
+# Uses VS Code globalStorage by default
+
+[tools.github-copilot]
+enabled = false
+# Uses VS Code workspaceStorage by default
+
+[tools.opencode]
+enabled = false
+# data_path = "~/.local/share/opencode"
+
+[tools.pi-agent]
+enabled = false
+# data_path = "~/.pi/agent/sessions"
