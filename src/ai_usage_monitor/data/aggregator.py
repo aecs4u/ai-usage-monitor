@@ -55,7 +55,11 @@ class AggregatedPeriod:
     period_key: str
     stats: AggregatedStats = field(default_factory=AggregatedStats)
     models_used: set = field(default_factory=set)
+    tools_used: set = field(default_factory=set)
     model_breakdowns: Dict[str, AggregatedStats] = field(
+        default_factory=lambda: defaultdict(AggregatedStats)
+    )
+    tool_breakdowns: Dict[str, AggregatedStats] = field(
         default_factory=lambda: defaultdict(AggregatedStats)
     )
 
@@ -68,8 +72,15 @@ class AggregatedPeriod:
         model = normalize_model_name(entry.model) if entry.model else "unknown"
         self.models_used.add(model)
 
+        # Track tool
+        tool = entry.tool_name if entry.tool_name else "unknown"
+        self.tools_used.add(tool)
+
         # Add to model-specific stats
         self.model_breakdowns[model].add_entry(entry)
+
+        # Add to tool-specific stats
+        self.tool_breakdowns[tool].add_entry(entry)
 
     def to_dict(self, period_type: str) -> Dict[str, Any]:
         """Convert to dictionary format for display."""
@@ -81,8 +92,12 @@ class AggregatedPeriod:
             "cache_read_tokens": self.stats.cache_read_tokens,
             "total_cost": self.stats.cost,
             "models_used": sorted(list(self.models_used)),
+            "tools_used": sorted(list(self.tools_used)),
             "model_breakdowns": {
                 model: stats.to_dict() for model, stats in self.model_breakdowns.items()
+            },
+            "tool_breakdowns": {
+                tool: stats.to_dict() for tool, stats in self.tool_breakdowns.items()
             },
             "entries_count": self.stats.count,
         }

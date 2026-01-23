@@ -66,20 +66,21 @@ class TableViewsController:
         table.add_column(
             period_column_name, style=self.key_style, width=period_column_width
         )
-        table.add_column("Models", style=self.value_style, width=20)
-        table.add_column("Input", style=self.value_style, justify="right", width=12)
-        table.add_column("Output", style=self.value_style, justify="right", width=12)
+        table.add_column("Tools", style=self.value_style, width=14)
+        table.add_column("Models", style=self.value_style, width=16)
+        table.add_column("Input", style=self.value_style, justify="right", width=10)
+        table.add_column("Output", style=self.value_style, justify="right", width=10)
         table.add_column(
-            "Cache Create", style=self.value_style, justify="right", width=12
+            "Cache Create", style=self.value_style, justify="right", width=10
         )
         table.add_column(
-            "Cache Read", style=self.value_style, justify="right", width=12
+            "Cache Read", style=self.value_style, justify="right", width=10
         )
         table.add_column(
-            "Total Tokens", style=self.accent_style, justify="right", width=12
+            "Total Tokens", style=self.accent_style, justify="right", width=10
         )
         table.add_column(
-            "Cost*", style=self.success_style, justify="right", width=10
+            "Cost*", style=self.success_style, justify="right", width=9
         )
 
         return table
@@ -95,6 +96,7 @@ class TableViewsController:
             period_key: Key to use for period column ('date' or 'month')
         """
         for data in data_list:
+            tools_text = self._format_tools(data.get("tools_used", []))
             models_text = self._format_models(data["models_used"])
             total_tokens = (
                 data["input_tokens"]
@@ -105,6 +107,7 @@ class TableViewsController:
 
             table.add_row(
                 data[period_key],
+                tools_text,
                 models_text,
                 format_number(data["input_tokens"]),
                 format_number(data["output_tokens"]),
@@ -122,12 +125,13 @@ class TableViewsController:
             totals: Dictionary with total statistics
         """
         # Add separator
-        table.add_row("", "", "", "", "", "", "", "")
+        table.add_row("", "", "", "", "", "", "", "", "")
 
         # Add totals row
         table.add_row(
             Text("Total", style=self.accent_style),
-            "",
+            "",  # Tools column
+            "",  # Models column
             Text(format_number(totals["input_tokens"]), style=self.accent_style),
             Text(format_number(totals["output_tokens"]), style=self.accent_style),
             Text(
@@ -302,6 +306,41 @@ class TableViewsController:
             formatted = "\n".join([f"• {model}" for model in first_two])
             formatted += f"\n• ...and {remaining_count} more"
             return formatted
+
+    def _format_tools(self, tools: List[str]) -> str:
+        """Format tool names for display.
+
+        Args:
+            tools: List of tool names
+
+        Returns:
+            Formatted string of tool names
+        """
+        if not tools:
+            return "-"
+
+        # Map tool IDs to display names
+        tool_display_names = {
+            "claude-code": "Claude",
+            "codex-cli": "Codex",
+            "gemini-cli": "Gemini",
+            "cline": "Cline",
+            "roo-code": "Roo",
+            "kilo-code": "Kilo",
+            "github-copilot": "Copilot",
+            "opencode": "OpenCode",
+            "pi-agent": "Pi Agent",
+        }
+
+        # Convert to display names
+        display_names = [tool_display_names.get(t, t) for t in tools]
+
+        if len(display_names) == 1:
+            return display_names[0]
+        elif len(display_names) <= 3:
+            return ", ".join(display_names)
+        else:
+            return f"{', '.join(display_names[:2])}, +{len(display_names) - 2}"
 
     def create_month_over_month_panel(
         self, monthly_data: List[Dict[str, Any]], plan: str
