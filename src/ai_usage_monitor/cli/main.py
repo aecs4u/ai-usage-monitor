@@ -9,7 +9,10 @@ import time
 import traceback
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Dict, List, NoReturn, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, NoReturn, Optional, Union
+
+if TYPE_CHECKING:
+    from ai_usage_monitor.core.config import AppConfig
 
 from rich.console import Console
 
@@ -49,25 +52,38 @@ def get_standard_claude_paths() -> List[str]:
 
 
 def discover_data_paths_for_tool(
-    tool_name: str, custom_paths: Optional[List[str]] = None
+    tool_name: str,
+    custom_paths: Optional[List[str]] = None,
+    config: Optional["AppConfig"] = None,
 ) -> List[Path]:
     """Discover data directories for a specific tool using the adapter system.
 
     Args:
         tool_name: Tool identifier (e.g., 'claude-code', 'codex-cli')
         custom_paths: Optional list of custom paths to check
+        config: Optional AppConfig to read tool configuration from
 
     Returns:
         List of Path objects for existing data directories
     """
-    adapter = AdapterRegistry.get_adapter(tool_name)
-    if adapter:
-        return adapter.discover_data_paths(custom_paths)
-
-    # Fallback for tools without adapters
     logger = logging.getLogger(__name__)
-    logger.warning(f"No adapter found for tool: {tool_name}")
-    return []
+
+    adapter = AdapterRegistry.get_adapter(tool_name)
+    if not adapter:
+        # Fallback for tools without adapters
+        logger.warning(f"No adapter found for tool: {tool_name}")
+        return []
+
+    # Priority: custom_paths > config data_path > defaults
+    paths_to_check = custom_paths
+
+    if paths_to_check is None and config:
+        config_data_path = config.get_tool_data_path(tool_name)
+        if config_data_path:
+            paths_to_check = [config_data_path]
+            logger.info(f"Using configured data path for {tool_name}: {config_data_path}")
+
+    return adapter.discover_data_paths(paths_to_check)
 
 
 def load_entries_from_all_tools():
@@ -107,16 +123,19 @@ def load_entries_from_all_tools():
     return all_entries
 
 
-def discover_claude_data_paths(custom_paths: Optional[List[str]] = None) -> List[Path]:
+def discover_claude_data_paths(
+    custom_paths: Optional[List[str]] = None, config: Optional["AppConfig"] = None
+) -> List[Path]:
     """Discover all available Claude data directories (legacy compatibility).
 
     Args:
         custom_paths: Optional list of custom paths to check instead of standard ones
+        config: Optional AppConfig to read tool configuration from
 
     Returns:
         List of Path objects for existing Claude data directories
     """
-    return discover_data_paths_for_tool("claude-code", custom_paths)
+    return discover_data_paths_for_tool("claude-code", custom_paths, config)
 
 
 def get_active_tool(settings: Settings) -> str:
@@ -166,6 +185,11 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         init_timezone(settings.timezone)
 
+        # Load TOML config
+        from ai_usage_monitor.core.config import load_config
+
+        config = load_config()
+
         # Determine active tool
         active_tool = get_active_tool(settings)
         logger = logging.getLogger(__name__)
@@ -173,6 +197,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         args = settings.to_namespace()
         args.active_tool = active_tool
+        args.config = config  # Attach config for use in discovery
 
         _run_monitoring(args)
 
@@ -550,7 +575,8 @@ def _run_multi_tool_table_view(
 
         # Get a default data path for token limit calculation (use claude-code if available)
         default_data_path = None
-        claude_paths = discover_data_paths_for_tool("claude-code")
+        config = getattr(args, "config", None)
+        claude_paths = discover_data_paths_for_tool("claude-code", config=config)
         if claude_paths:
             default_data_path = claude_paths[0]
 
