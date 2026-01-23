@@ -195,16 +195,39 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         config = load_config()
 
+        # Initialize telemetry if enabled
+        from ai_usage_monitor.telemetry import get_logfire_manager, initialize_logfire
+
+        if config.telemetry.enabled:
+            initialize_logfire(
+                enabled=True,
+                token=config.telemetry.token,
+                sample_rate=config.telemetry.sample_rate,
+            )
+            logger.info("Logfire telemetry initialized")
+
+        lf = get_logfire_manager()
+
         # Determine active tool
         active_tool = get_active_tool(settings)
         logger = logging.getLogger(__name__)
         logger.info(f"Active tool: {active_tool}")
 
+        # Log feature usage (anonymized)
+        lf.log_event(
+            "cli.session_start",
+            tool=active_tool,
+            view=settings.view,
+            plan=settings.plan,
+            version=__version__,
+        )
+
         args = settings.to_namespace()
         args.active_tool = active_tool
         args.config = config  # Attach config for use in discovery
 
-        _run_monitoring(args)
+        with lf.span("cli.main_execution", tool=active_tool, view=settings.view):
+            _run_monitoring(args)
 
         return 0
 

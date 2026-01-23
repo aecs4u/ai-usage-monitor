@@ -55,33 +55,57 @@ def analyze_usage(
     elif quick_start:
         logger.info(f"Quick start mode: loading last {hours_back} hours")
 
-    start_time = datetime.now()
+    from ai_usage_monitor.telemetry import get_logfire_manager
 
-    # Use adapter if provided (new path), otherwise fallback to legacy reader
-    if adapter:
-        logger.debug(f"Loading entries via adapter: {adapter.metadata.name}")
-        entries, raw_entries = adapter.load_usage_entries(
-            hours_back=hours_back,
-            include_raw=True,
-        )
-    else:
-        # Fallback to legacy reader for backward compatibility
-        logger.debug("Loading entries via legacy reader (consider using adapter)")
-        entries, raw_entries = load_usage_entries(
-            data_path=data_path,
-            hours_back=hours_back,
-            mode=CostMode.AUTO,
-            include_raw=True,
-        )
+    lf = get_logfire_manager()
 
-    load_time = (datetime.now() - start_time).total_seconds()
-    logger.info(f"Data loaded in {load_time:.3f}s")
+    with lf.span(
+        "data.analyze_usage",
+        hours_back=hours_back,
+        quick_start=quick_start,
+        adapter_used=bool(adapter),
+    ):
+        start_time = datetime.now()
 
-    start_time = datetime.now()
-    analyzer = SessionAnalyzer(session_duration_hours=5)
-    blocks = analyzer.transform_to_blocks(entries)
-    transform_time = (datetime.now() - start_time).total_seconds()
-    logger.info(f"Created {len(blocks)} blocks in {transform_time:.3f}s")
+        # Use adapter if provided (new path), otherwise fallback to legacy reader
+        if adapter:
+            logger.debug(f"Loading entries via adapter: {adapter.metadata.name}")
+            with lf.span(
+                "data.load_entries", tool=adapter.metadata.name, source="adapter"
+            ):
+                entries, raw_entries = adapter.load_usage_entries(
+                    hours_back=hours_back,
+                    include_raw=True,
+                )
+                lf.log_metric(
+                    "data.entries_loaded",
+                    len(entries),
+                    tool=adapter.metadata.name,
+                )
+        else:
+            # Fallback to legacy reader for backward compatibility
+            logger.debug("Loading entries via legacy reader (consider using adapter)")
+            with lf.span("data.load_entries", source="legacy_reader"):
+                entries, raw_entries = load_usage_entries(
+                    data_path=data_path,
+                    hours_back=hours_back,
+                    mode=CostMode.AUTO,
+                    include_raw=True,
+                )
+                lf.log_metric("data.entries_loaded", len(entries), source="legacy")
+
+        load_time = (datetime.now() - start_time).total_seconds()
+        logger.info(f"Data loaded in {load_time:.3f}s")
+        lf.log_metric("data.load_time_seconds", load_time)
+
+        start_time = datetime.now()
+        with lf.span("data.transform_to_blocks"):
+            analyzer = SessionAnalyzer(session_duration_hours=5)
+            blocks = analyzer.transform_to_blocks(entries)
+        transform_time = (datetime.now() - start_time).total_seconds()
+        logger.info(f"Created {len(blocks)} blocks in {transform_time:.3f}s")
+        lf.log_metric("data.blocks_created", len(blocks))
+        lf.log_metric("data.transform_time_seconds", transform_time)
 
     calculator = BurnRateCalculator()
     _process_burn_rates(blocks, calculator)

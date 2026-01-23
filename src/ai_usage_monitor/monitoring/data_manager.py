@@ -50,10 +50,17 @@ class DataManager:
         Returns:
             Usage data dictionary or None if fetch fails
         """
+        from ai_usage_monitor.telemetry import get_logfire_manager
+
+        lf = get_logfire_manager()
+
         if not force_refresh and self._is_cache_valid():
             cache_age: float = time.time() - self._cache_timestamp  # type: ignore
             logger.debug(f"Using cached data (age: {cache_age:.1f}s)")
+            lf.log_metric("monitoring.cache_hit", 1, cache_age_seconds=cache_age)
             return self._cache
+
+        lf.log_metric("monitoring.cache_miss", 1, force_refresh=force_refresh)
 
         max_retries: int = 3
         for attempt in range(max_retries):

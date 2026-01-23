@@ -69,12 +69,24 @@ class AdapterRegistry:
         Returns:
             The adapter instance, or None if not found.
         """
+        from ai_usage_monitor.telemetry import get_logfire_manager
+
+        lf = get_logfire_manager()
+
         if tool_name not in cls._instances:
             if tool_name in cls._adapters:
                 try:
-                    cls._instances[tool_name] = cls._adapters[tool_name]()
+                    with lf.span("adapter.instantiate", tool=tool_name):
+                        cls._instances[tool_name] = cls._adapters[tool_name]()
+                        lf.log_metric("adapter.instantiated", 1, tool=tool_name)
                 except Exception as e:
                     logger.error(f"Failed to instantiate adapter {tool_name}: {e}")
+                    lf.log_metric(
+                        "adapter.instantiation_error",
+                        1,
+                        tool=tool_name,
+                        error=str(e),
+                    )
                     return None
         return cls._instances.get(tool_name)
 

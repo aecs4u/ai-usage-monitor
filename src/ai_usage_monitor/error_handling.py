@@ -47,6 +47,24 @@ def report_error(
             exc_info=True,
             extra=extra_data,
         )
+
+        # Send error to telemetry if enabled
+        try:
+            from ai_usage_monitor.telemetry import get_logfire_manager
+
+            lf = get_logfire_manager()
+            if lf.enabled:
+                lf.log_metric(
+                    "error.reported",
+                    1,
+                    component=component,
+                    error_type=type(exception).__name__,
+                    context=context_name or "unknown",
+                    level=level.value,
+                )
+        except Exception:
+            # Never let telemetry break error reporting
+            pass
     except Exception:
         # If logging itself fails, we can't do much more than silently continue
         # to avoid cascading failures
