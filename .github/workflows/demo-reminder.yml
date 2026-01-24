@@ -1,0 +1,79 @@
+name: Demo Update Reminder
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  remind-demo-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if UI/UX changes
+        id: check-changes
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create reminder issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: release } = await github.rest.repos.getLatestRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+
+            const issueBody = `## 🎬 Demo Update Reminder
+
+            A new release (${release.tag_name}) has been published!
+
+            ### Action Required
+
+            Consider updating the demo recording if there were significant UI/UX changes:
+
+            1. **Check if demo needs updating:**
+               - New views or displays
+               - Changed table layouts
+               - New CLI options
+               - Visual improvements
+
+            2. **Re-record if needed:**
+               \`\`\`bash
+               ./scripts/record-demo.sh
+               \`\`\`
+
+            3. **Upload to asciinema.org:**
+               \`\`\`bash
+               asciinema upload demo.cast
+               \`\`\`
+
+            4. **Update README.md:**
+               - Replace old asciinema link
+               - Update demo description
+               - Test the embedded player
+
+            5. **Close this issue** when done
+
+            ### Resources
+
+            - [Demo Recording Guide](../docs/DEMO_RECORDING_GUIDE.md)
+            - [Release Notes](${release.html_url})
+            - Current demo: Check README.md
+
+            ---
+
+            *This issue was automatically created for release ${release.tag_name}.*
+            *If no demo update is needed, you can close this issue.*
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `📹 Consider updating demo for ${release.tag_name}`,
+              body: issueBody,
+              labels: ['documentation', 'enhancement']
+            });

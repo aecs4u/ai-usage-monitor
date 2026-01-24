@@ -1,0 +1,67 @@
+# Auto-labeling configuration for pull requests
+# Labels PRs based on which files are changed
+
+documentation:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'docs/**/*'
+      - '*.md'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - 'CHANGELOG.md'
+
+adapters:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'src/ai_usage_monitor/adapters/**/*'
+
+core:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'src/ai_usage_monitor/core/**/*'
+
+ui:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'src/ai_usage_monitor/ui/**/*'
+
+cli:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'src/ai_usage_monitor/cli/**/*'
+
+monitoring:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'src/ai_usage_monitor/monitoring/**/*'
+
+tests:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'src/tests/**/*'
+      - 'tests/**/*'
+
+telemetry:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'src/ai_usage_monitor/telemetry/**/*'
+
+dependencies:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'pyproject.toml'
+      - 'requirements*.txt'
+      - 'setup.py'
+      - 'setup.cfg'
+
+ci-cd:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/**/*'
+      - '.gitlab-ci.yml'
+      - 'Dockerfile'
+
+scripts:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'scripts/**/*'
