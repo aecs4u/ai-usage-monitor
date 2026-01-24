@@ -608,6 +608,34 @@ def _run_multi_tool_table_view(
         if claude_paths:
             default_data_path = claude_paths[0]
 
+        # Check if export is requested
+        if hasattr(args, "export") and args.export:
+            from pathlib import Path
+
+            from ai_usage_monitor.utils.export import export_to_csv, export_to_json
+
+            export_path = Path(args.export_path) if args.export_path else None
+
+            if args.export == "json":
+                success = export_to_json(
+                    aggregated_data,
+                    export_path,
+                    view_type=view_mode,
+                    tool_name="all",
+                )
+            elif args.export == "csv":
+                success = export_to_csv(aggregated_data, export_path, view_type=view_mode)
+            else:
+                print_themed(
+                    f"Invalid export format: {args.export}. Use 'json' or 'csv'.",
+                    style="error",
+                )
+                return
+
+            if success and export_path:
+                # Exit after successful file export (don't show table)
+                return
+
         # Display the table
         controller.display_aggregated_view(
             data=aggregated_data,
@@ -675,6 +703,34 @@ def _run_table_view(
         if not aggregated_data:
             print_themed(f"No usage data found for {view_mode} view", style="warning")
             return
+
+        # Check if export is requested
+        if hasattr(args, "export") and args.export:
+            from pathlib import Path
+
+            from ai_usage_monitor.utils.export import export_to_csv, export_to_json
+
+            export_path = Path(args.export_path) if args.export_path else None
+
+            if args.export == "json":
+                success = export_to_json(
+                    aggregated_data,
+                    export_path,
+                    view_type=view_mode,
+                    tool_name=adapter.metadata.name,
+                )
+            elif args.export == "csv":
+                success = export_to_csv(aggregated_data, export_path, view_type=view_mode)
+            else:
+                print_themed(
+                    f"Invalid export format: {args.export}. Use 'json' or 'csv'.",
+                    style="error",
+                )
+                return
+
+            if success and export_path:
+                # Exit after successful file export (don't show table)
+                return
 
         # Create table controller
         controller = TableViewsController(console=console)

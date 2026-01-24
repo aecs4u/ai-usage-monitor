@@ -36,6 +36,7 @@ AI coding assistants are incredibly powerful, but costs can add up quickly. This
   - [Command-Line Options](#command-line-options)
   - [View Modes](#view-modes)
   - [Date Range Filtering](#date-range-filtering)
+  - [Export Data](#export-data)
   - [Configuration File](#configuration-file)
 - [MCP Server Integration](#mcp-server-integration)
 - [Subscription Plans & Savings](#subscription-plans--savings)
@@ -49,8 +50,11 @@ AI coding assistants are incredibly powerful, but costs can add up quickly. This
 
 ## Key Features
 
-### v4.0.0 - Multi-Tool Support & Enhanced Analytics
+### v4.1.0 - Performance & Export Features
 
+- **Export to JSON/CSV** - Export usage data for analysis in Excel, Python, or other tools
+- **50%+ Faster Monitoring** - Incremental file loading for improved performance
+- **Optional Telemetry** - Opt-in Logfire integration for observability (privacy-first)
 - **Multi-Tool Monitoring** - Support for 9 AI coding tools (Claude Code, Codex CLI, Gemini CLI, Cline, Roo Code, Kilo Code, GitHub Copilot, OpenCode, Pi Agent)
 - **Subscription Savings** - Calculate and display how much you save with subscription plans vs API pricing
 - **Month-over-Month Comparison** - Track usage trends with delta calculations
@@ -163,6 +167,8 @@ The tool can be invoked using any of these commands:
 | `--view` | string | monthly | View mode: `realtime`, `daily`, `monthly` |
 | `--from-date` | string | None | Start date filter (YYYY-MM-DD) |
 | `--to-date` | string | None | End date filter (YYYY-MM-DD) |
+| `--export` | string | None | Export format: `json`, `csv` |
+| `--export-path` | string | stdout | Output file path for export |
 | `--timezone` | string | auto | Timezone (auto-detected) |
 | `--theme` | string | auto | Display theme: `light`, `dark`, `classic`, `auto` |
 | `--refresh-rate` | int | 10 | Data refresh rate in seconds (1-60) |
@@ -221,6 +227,51 @@ ai-usage-monitor --view daily --from-date 2025-01-16
 
 # December 2024 monthly report
 ai-usage-monitor --view monthly --from-date 2024-12-01 --to-date 2024-12-31
+```
+
+### Export Data
+
+Export your usage data to JSON or CSV for further analysis:
+
+```bash
+# Export to JSON file
+ai-usage-monitor --view daily --export json --export-path daily_usage.json
+
+# Export to CSV file
+ai-usage-monitor --view monthly --export csv --export-path monthly_usage.csv
+
+# Export to stdout (pipe to other tools)
+ai-usage-monitor --view daily --export json | jq '.data[] | select(.total_cost > 1.0)'
+
+# Export multi-tool aggregation
+ai-usage-monitor --tool all --view monthly --export csv --export-path all_tools.csv
+
+# Export with date filtering
+ai-usage-monitor --view daily --from-date 2025-01-01 --export json --export-path january.json
+```
+
+**Export formats:**
+- **JSON**: Includes metadata (version, export timestamp, tool name) and structured data
+- **CSV**: Simple tabular format, easy to import into Excel/Google Sheets
+
+**JSON export structure:**
+```json
+{
+  "format": "ai-usage-monitor-export",
+  "version": "1.0",
+  "view_type": "daily",
+  "tool": "claude-code",
+  "exported_at": "2025-01-24T12:00:00+00:00",
+  "data": [
+    {
+      "date": "2025-01-20",
+      "input_tokens": 1000,
+      "output_tokens": 500,
+      "total_cost": 0.05,
+      ...
+    }
+  ]
+}
 ```
 
 ### Configuration File

@@ -157,6 +157,17 @@ class Settings(BaseSettings):
         description="Automatically upload usage data to cloud",
     )
 
+    # Export settings
+    export: Optional[Literal["json", "csv"]] = Field(
+        default=None,
+        description="Export format (json, csv)",
+    )
+
+    export_path: Optional[str] = Field(
+        default=None,
+        description="Output path for export (default: stdout)",
+    )
+
     @staticmethod
     def _get_system_timezone() -> str:
         """Lazy import to avoid circular dependencies."""
