@@ -1,0 +1,220 @@
+{
+  "name": "ai-usage-monitor",
+  "displayName": "AI Usage Monitor",
+  "description": "Monitor AI coding assistant usage with real-time dashboards and cost tracking",
+  "version": "1.0.0",
+  "publisher": "aecs4u",
+  "icon": "resources/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization",
+    "Data Science"
+  ],
+  "keywords": [
+    "ai",
+    "monitoring",
+    "claude",
+    "cline",
+    "copilot",
+    "usage",
+    "tokens",
+    "costs",
+    "analytics"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ai-usage-monitor",
+          "title": "AI Usage Monitor",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "ai-usage-monitor": [
+        {
+          "id": "aiUsageOverview",
+          "name": "Overview"
+        },
+        {
+          "id": "aiUsageDaily",
+          "name": "Daily Usage"
+        },
+        {
+          "id": "aiUsageMonthly",
+          "name": "Monthly Usage"
+        },
+        {
+          "id": "aiUsageTools",
+          "name": "Tools"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "aiUsageMonitor.refresh",
+        "title": "Refresh Usage Data",
+        "icon": "$(refresh)",
+        "category": "AI Usage Monitor"
+      },
+      {
+        "command": "aiUsageMonitor.showDashboard",
+        "title": "Show Dashboard",
+        "icon": "$(graph)",
+        "category": "AI Usage Monitor"
+      },
+      {
+        "command": "aiUsageMonitor.exportData",
+        "title": "Export Usage Data",
+        "icon": "$(export)",
+        "category": "AI Usage Monitor"
+      },
+      {
+        "command": "aiUsageMonitor.showCosts",
+        "title": "Show Cost Analysis",
+        "icon": "$(graph-line)",
+        "category": "AI Usage Monitor"
+      },
+      {
+        "command": "aiUsageMonitor.configure",
+        "title": "Configure Settings",
+        "icon": "$(settings-gear)",
+        "category": "AI Usage Monitor"
+      },
+      {
+        "command": "aiUsageMonitor.selectTool",
+        "title": "Select AI Tool",
+        "icon": "$(filter)",
+        "category": "AI Usage Monitor"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "aiUsageMonitor.refresh",
+          "when": "view == aiUsageOverview || view == aiUsageDaily || view == aiUsageMonthly",
+          "group": "navigation@1"
+        },
+        {
+          "command": "aiUsageMonitor.showDashboard",
+          "when": "view == aiUsageOverview",
+          "group": "navigation@2"
+        },
+        {
+          "command": "aiUsageMonitor.exportData",
+          "when": "view == aiUsageMonthly || view == aiUsageDaily",
+          "group": "navigation@3"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "aiUsageMonitor.refresh"
+        },
+        {
+          "command": "aiUsageMonitor.showDashboard"
+        },
+        {
+          "command": "aiUsageMonitor.exportData"
+        },
+        {
+          "command": "aiUsageMonitor.showCosts"
+        },
+        {
+          "command": "aiUsageMonitor.configure"
+        },
+        {
+          "command": "aiUsageMonitor.selectTool"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "AI Usage Monitor",
+      "properties": {
+        "aiUsageMonitor.enableAutoRefresh": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically refresh usage data"
+        },
+        "aiUsageMonitor.refreshInterval": {
+          "type": "number",
+          "default": 60,
+          "description": "Auto-refresh interval in seconds",
+          "minimum": 10,
+          "maximum": 300
+        },
+        "aiUsageMonitor.defaultTool": {
+          "type": "string",
+          "default": "auto",
+          "enum": [
+            "auto",
+            "all",
+            "claude-code",
+            "cline",
+            "codex-cli",
+            "gemini-cli",
+            "github-copilot",
+            "roo-code",
+            "kilo-code",
+            "opencode",
+            "pi-agent"
+          ],
+          "description": "Default AI tool to monitor"
+        },
+        "aiUsageMonitor.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications for usage milestones"
+        },
+        "aiUsageMonitor.cliPath": {
+          "type": "string",
+          "default": "",
+          "description": "Custom path to ai-usage-monitor CLI (leave empty for auto-detect)"
+        },
+        "aiUsageMonitor.timezone": {
+          "type": "string",
+          "default": "auto",
+          "description": "Timezone for displaying usage data"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3",
+    "@vscode/test-electron": "^2.3.8",
+    "@vscode/vsce": "^2.22.0"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aecs4u/ai-usage-monitor.git",
+    "directory": "vscode-extension"
+  },
+  "bugs": {
+    "url": "https://github.com/aecs4u/ai-usage-monitor/issues"
+  },
+  "homepage": "https://github.com/aecs4u/ai-usage-monitor#readme",
+  "license": "MIT"
+}
