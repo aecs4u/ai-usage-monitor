@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Usage Monitor - Overview Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1e1e1e;
+            color: #cccccc;
+            padding: 0;
+            margin: 0;
+        }
+
+        .vscode-container {
+            width: 1200px;
+            height: 800px;
+            margin: 0;
+            background: #252526;
+            display: flex;
+        }
+
+        .activity-bar {
+            width: 48px;
+            background: #333333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 10px;
+        }
+
+        .activity-icon {
+            width: 36px;
+            height: 36px;
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .activity-icon.active {
+            border-left: 2px solid #007acc;
+        }
+
+        .activity-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: #cccccc;
+        }
+
+        .activity-icon.active svg {
+            fill: #ffffff;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #252526;
+            border-right: 1px solid #3c3c3c;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            height: 35px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #3c3c3c;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        .tree-section {
+            margin-bottom: 16px;
+        }
+
+        .tree-section-header {
+            padding: 4px 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #888888;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .tree-item {
+            display: flex;
+            align-items: center;
+            padding: 4px 20px;
+            cursor: pointer;
+            font-size: 13px;
+            line-height: 22px;
+        }
+
+        .tree-item:hover {
+            background: #2a2d2e;
+        }
+
+        .tree-item .icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tree-item .label {
+            flex: 1;
+            color: #cccccc;
+        }
+
+        .tree-item .description {
+            color: #888888;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
+        .tree-item.highlight .label {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .tree-item.highlight .description {
+            color: #4ec9b0;
+            font-weight: 500;
+        }
+
+        .editor-area {
+            flex: 1;
+            background: #1e1e1e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888888;
+            font-size: 14px;
+        }
+
+        /* Icons */
+        .icon-calendar { color: #569cd6; }
+        .icon-number { color: #4ec9b0; }
+        .icon-dollar { color: #dcdcaa; }
+        .icon-arrow-right { color: #ce9178; }
+        .icon-arrow-left { color: #c586c0; }
+        .icon-database { color: #4fc1ff; }
+        .icon-dash { color: #9cdcfe; }
+        .icon-list { color: #d4d4d4; }
+    </style>
+</head>
+<body>
+    <div class="vscode-container">
+        <!-- Activity Bar -->
+        <div class="activity-bar">
+            <div class="activity-icon">
+                <svg viewBox="0 0 24 24"><path d="M3 13h2v8H3v-8zm4-6h2v14H7V7zm4-4h2v18h-2V3zm4 8h2v10h-2V11z"/></svg>
+            </div>
+            <div class="activity-icon active">
+                <svg viewBox="0 0 24 24"><path d="M3 13h2v8H3v-8zm4-6h2v14H7V7zm4-4h2v18h-2V3zm4 8h2v10h-2V11z"/></svg>
+            </div>
+        </div>
+
+        <!-- Sidebar with Overview Panel -->
+        <div class="sidebar">
+            <div class="sidebar-header">AI USAGE MONITOR</div>
+
+            <div class="sidebar-content">
+                <!-- Overview Section -->
+                <div class="tree-section">
+                    <div class="tree-section-header">OVERVIEW</div>
+
+                    <div class="tree-item highlight">
+                        <div class="icon icon-calendar">📅</div>
+                        <div class="label">Current Month</div>
+                        <div class="description">January 2026</div>
+                    </div>
+
+                    <div class="tree-item highlight">
+                        <div class="icon icon-number">🔢</div>
+                        <div class="label">Total Tokens</div>
+                        <div class="description">1.2M</div>
+                    </div>
+
+                    <div class="tree-item highlight">
+                        <div class="icon icon-dollar">💰</div>
+                        <div class="label">Total Cost</div>
+                        <div class="description">$45.67</div>
+                    </div>
+
+                    <div class="tree-item">
+                        <div class="icon icon-arrow-right">➡️</div>
+                        <div class="label">Input Tokens</div>
+                        <div class="description">800K</div>
+                    </div>
+
+                    <div class="tree-item">
+                        <div class="icon icon-arrow-left">⬅️</div>
+                        <div class="label">Output Tokens</div>
+                        <div class="description">400K</div>
+                    </div>
+
+                    <div class="tree-item">
+                        <div class="icon icon-database">💾</div>
+                        <div class="label">Cache Created</div>
+                        <div class="description">200K</div>
+                    </div>
+
+                    <div class="tree-item">
+                        <div class="icon icon-dash">➖</div>
+                        <div class="label">Cache Read</div>
+                        <div class="description">150K</div>
+                    </div>
+
+                    <div class="tree-item">
+                        <div class="icon icon-list">📋</div>
+                        <div class="label">Sessions</div>
+                        <div class="description">127</div>
+                    </div>
+                </div>
+
+                <!-- Daily Usage Section -->
+                <div class="tree-section">
+                    <div class="tree-section-header">DAILY USAGE</div>
+
+                    <div class="tree-item">
+                        <div class="icon icon-calendar">📅</div>
+                        <div class="label">Jan 24, 2026</div>
+                        <div class="description">120K • $4.50</div>
+                    </div>
+
+                    <div class="tree-item">
+                        <div class="icon icon-calendar">📅</div>
+                        <div class="label">Jan 23, 2026</div>
+                        <div class="description">95K • $3.20</div>
+                    </div>
+
+                    <div class="tree-item">
+                        <div class="icon icon-calendar">📅</div>
+                        <div class="label">Jan 22, 2026</div>
+                        <div class="description">110K • $4.10</div>
+                    </div>
+                </div>
+
+                <!-- Monthly Usage Section -->
+                <div class="tree-section">
+                    <div class="tree-section-header">MONTHLY USAGE</div>
+
+                    <div class="tree-item">
+                        <div class="icon icon-calendar">📅</div>
+                        <div class="label">January 2026</div>
+                        <div class="description">1.2M • $45.67</div>
+                    </div>
+
+                    <div class="tree-item">
+                        <div class="icon icon-calendar">📅</div>
+                        <div class="label">December 2025</div>
+                        <div class="description">980K • $38.90</div>
+                    </div>
+                </div>
+
+                <!-- Tools Section -->
+                <div class="tree-section">
+                    <div class="tree-section-header">TOOLS</div>
+
+                    <div class="tree-item">
+                        <div class="icon" style="color: #22c55e;">✓</div>
+                        <div class="label">Claude Code</div>
+                        <div class="description">Available</div>
+                    </div>
+
+                    <div class="tree-item">
+                        <div class="icon" style="color: #22c55e;">✓</div>
+                        <div class="label">Cline</div>
+                        <div class="description">Available</div>
+                    </div>
+
+                    <div class="tree-item">
+                        <div class="icon" style="color: #666;">○</div>
+                        <div class="label">GitHub Copilot</div>
+                        <div class="description">Not detected</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Editor Area -->
+        <div class="editor-area">
+            <div>Select an item to view details</div>
+        </div>
+    </div>
+
+    <script>
+        // Add click handlers for tree items
+        document.querySelectorAll('.tree-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.tree-item').forEach(i => i.classList.remove('highlight'));
+                item.classList.add('highlight');
+            });
+        });
+    </script>
+</body>
+</html>

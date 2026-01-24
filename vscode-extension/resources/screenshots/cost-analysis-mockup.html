@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Usage Monitor - Cost Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1e1e1e;
+            color: #cccccc;
+            padding: 0;
+            margin: 0;
+        }
+
+        .cost-analysis-container {
+            width: 1200px;
+            height: 900px;
+            background: #1e1e1e;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #888888;
+            font-size: 14px;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .metric-card {
+            background: #252526;
+            padding: 28px;
+            border-radius: 4px;
+            border: 1px solid #3c3c3c;
+            border-left: 4px solid #007acc;
+        }
+
+        .metric-card h3 {
+            margin: 0 0 12px 0;
+            font-size: 13px;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .metric-card .value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+
+        .metric-card .subtext {
+            font-size: 12px;
+            color: #888888;
+        }
+
+        .metric-card .trend {
+            display: inline-block;
+            margin-left: 8px;
+            font-size: 14px;
+        }
+
+        .trend.up { color: #ef4444; }
+        .trend.down { color: #22c55e; }
+
+        .section {
+            background: #252526;
+            padding: 32px;
+            border-radius: 4px;
+            border: 1px solid #3c3c3c;
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .section p {
+            color: #cccccc;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .plan {
+            padding: 20px;
+            margin: 16px 0;
+            background: #1e1e1e;
+            border-radius: 4px;
+            border: 1px solid #3c3c3c;
+        }
+
+        .plan h3 {
+            margin: 0 0 12px 0;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .plan p {
+            margin: 8px 0;
+            color: #cccccc;
+            font-size: 14px;
+        }
+
+        .plan .savings {
+            color: #22c55e;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .plan .cost-more {
+            color: #ef4444;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .plan .best-for {
+            color: #888888;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        .plan.recommended {
+            border: 2px solid #007acc;
+            background: rgba(0, 122, 204, 0.05);
+        }
+
+        .plan.recommended h3::after {
+            content: " ⭐";
+        }
+
+        .insights {
+            background: #252526;
+            padding: 32px;
+            border-radius: 4px;
+            border: 1px solid #3c3c3c;
+        }
+
+        .insights h2 {
+            margin-top: 0;
+            margin-bottom: 24px;
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .insight-item {
+            padding: 16px 0;
+            border-bottom: 1px solid #3c3c3c;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .insight-item:last-child {
+            border-bottom: none;
+        }
+
+        .insight-item .icon {
+            font-size: 24px;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+
+        .insight-item .content {
+            flex: 1;
+        }
+
+        .insight-item strong {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .insight-item p {
+            margin: 4px 0 0 0;
+            color: #cccccc;
+            line-height: 1.5;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 2px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.recommended {
+            background: #007acc;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="cost-analysis-container">
+        <div class="header">
+            <h1>💰 Cost Analysis</h1>
+            <p>Detailed breakdown of your AI usage costs and optimization recommendations</p>
+        </div>
+
+        <div class="metrics">
+            <div class="metric-card">
+                <h3>Total Spend</h3>
+                <div class="value">$156.78</div>
+                <div class="subtext">All time</div>
+            </div>
+
+            <div class="metric-card" style="border-left-color: #22c55e;">
+                <h3>Average Monthly</h3>
+                <div class="value">$52.26</div>
+                <div class="subtext">3 months tracked</div>
+            </div>
+
+            <div class="metric-card" style="border-left-color: #f59e0b;">
+                <h3>Current Month</h3>
+                <div class="value">$45.67</div>
+                <div class="subtext">
+                    <span class="trend down">↓ Below</span> average
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Subscription Recommendations</h2>
+            <p>Based on your average monthly spend of <strong>$52.26</strong>, here are the best options for your usage pattern:</p>
+
+            <div class="plan">
+                <h3>API Only (Current)</h3>
+                <p>Pay as you go: <strong>$52.26/month</strong> average</p>
+                <p class="best-for">Best for: Variable usage patterns with unpredictable workloads</p>
+            </div>
+
+            <div class="plan">
+                <h3>Max5 Plan ($20/month)</h3>
+                <p class="cost-more">Costs $32.26/month more than your average usage</p>
+                <p class="best-for">Best for: Light, regular daily usage</p>
+                <p style="color: #888888; font-size: 13px;">Not recommended for your current usage level</p>
+            </div>
+
+            <div class="plan recommended">
+                <h3>Max20 Plan ($60/month)</h3>
+                <p class="savings">💰 Save approximately $7.74/month (15% savings)</p>
+                <p class="best-for">Best for: Heavy daily usage with consistent patterns</p>
+                <p style="color: #007acc; font-weight: 600; margin-top: 12px;">
+                    <span class="badge recommended">Recommended</span>
+                    This plan matches your usage pattern
+                </p>
+            </div>
+        </div>
+
+        <div class="insights">
+            <h2>💡 Insights & Recommendations</h2>
+
+            <div class="insight-item">
+                <div class="icon">📊</div>
+                <div class="content">
+                    <strong>Usage Trend:</strong>
+                    <p>Your current month is <span style="color: #22c55e;">13% below</span> your average, suggesting stable or decreasing usage patterns.</p>
+                </div>
+            </div>
+
+            <div class="insight-item">
+                <div class="icon">💵</div>
+                <div class="content">
+                    <strong>Cost Efficiency:</strong>
+                    <p>The Max20 subscription plan offers the best value for your usage level, providing predictable costs and potential savings of $7.74/month.</p>
+                </div>
+            </div>
+
+            <div class="insight-item">
+                <div class="icon">📈</div>
+                <div class="content">
+                    <strong>Next Month Projection:</strong>
+                    <p>Based on current trends, your next month's usage is projected to cost approximately <strong>$45.67</strong>, which is below the Max20 plan threshold.</p>
+                </div>
+            </div>
+
+            <div class="insight-item">
+                <div class="icon">🎯</div>
+                <div class="content">
+                    <strong>Optimization Tip:</strong>
+                    <p>Consider upgrading to Max20 plan for consistent heavy usage. You're currently spending close to the subscription cost with pay-as-you-go pricing.</p>
+                </div>
+            </div>
+
+            <div class="insight-item">
+                <div class="icon">⚡</div>
+                <div class="content">
+                    <strong>Cache Optimization:</strong>
+                    <p>Your cache hit rate is <strong>43%</strong>. Improving prompt caching could reduce costs by an additional 10-15%.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
