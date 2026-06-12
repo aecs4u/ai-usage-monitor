@@ -15,7 +15,7 @@ jobs:
       matrix:
         # Linux-only: macOS bills Actions minutes at 10x
         os: [ubuntu-latest]
-        python-version: ["3.11"]
+        python-version: ["3.12"]
 
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +35,7 @@ jobs:
         run: uv run pytest src/tests/ -v --tb=short --cov=claude_monitor --cov-report=xml --cov-report=term-missing
 
       - name: Upload coverage reports to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -46,7 +46,7 @@ jobs:
   #   name: Security scanning
   #   strategy:
   #     matrix:
-  #       python-version: ["3.11"]
+  #       python-version: ["3.12"]
   #
   #   steps:
   #     - uses: actions/checkout@v4
@@ -82,7 +82,7 @@ jobs:
   #   name: Performance benchmarks
   #   strategy:
   #     matrix:
-  #       python-version: ["3.11"]
+  #       python-version: ["3.12"]
   #
   #   steps:
   #     - uses: actions/checkout@v4

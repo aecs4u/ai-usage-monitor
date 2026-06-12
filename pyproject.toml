@@ -10,7 +10,7 @@ version = "4.0.0"
 description = "A fast, cross-platform, real-time token usage tracker and cost monitor for AI coding tools (Claude, Codex, Gemini, Cline, Copilot, and more)"
 readme = "README.md"
 license = { text = "MIT" }
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 authors = [{ name = "Maciek", email = "emanuele@aecs4u.com" }]
 maintainers = [{ name = "Maciek", email = "emanuele@aecs4u.com" }]
 keywords = [
