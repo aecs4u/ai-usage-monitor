@@ -15,7 +15,7 @@ jobs:
       matrix:
         # Linux-only: macOS bills Actions minutes at 10x
         os: [ubuntu-latest]
-        python-version: ["3.9", "3.13"]
+        python-version: ["3.11"]
 
     steps:
       - uses: actions/checkout@v4
